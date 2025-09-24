@@ -111,24 +111,24 @@ class FinanceService {
   }
 
   getHoldingsForETF(name) {
-    // Nombre d'unités détenues pour chaque ETF (simulé)
+    // Vraies quantités d'unités détenues pour chaque ETF
     const holdings = {
-      'ISH COR S&P500': 354,
-      'ISHAR.III PLC': 142,
-      'ISHARES PLC': 256,
-      'INVESCO MKS': 79,
-      'IN.M.III PLC-EQQQ': 14
+      'ISH COR S&P500': 354,           // IS CO S&P500 U.ETF USD
+      'ISHAR.III PLC': 1424,          // ISHAR.III PLC CORE MSCI WORLD
+      'ISHARES PLC': 2567,            // ISHARES PLC CORE MSC E.M.IM UC
+      'INVESCO MKS': 796,             // INVESCO MKS PLC MSCI WORLD U.ETF
+      'IN.M.III PLC-EQQQ': 121        // INV.MAR.III-EQQQ NASDAQ-100 ETF
     };
     return holdings[name] || 100;
   }
 
   getSubtitleForETF(name) {
     const subtitles = {
-      'ISH COR S&P500': 'U.ETF USD(ACC)-PT...',
-      'ISHAR.III PLC': 'CORE MSCI WO...',
-      'ISHARES PLC': 'CORE MSC E.M.I...',
-      'INVESCO MKS': 'PLC MSCI WOR...',
-      'IN.M.III PLC-EQQQ': 'NAS.-100 UC.ETF...'
+      'ISH COR S&P500': 'IS CO S&P500 U.ETF USD',
+      'ISHAR.III PLC': 'CORE MSCI WORLD',
+      'ISHARES PLC': 'CORE MSC E.M.IM UC',
+      'INVESCO MKS': 'PLC MSCI WORLD U.ETF',
+      'IN.M.III PLC-EQQQ': 'NASDAQ-100 ETF'
     };
     return subtitles[name] || 'ETF...';
   }
