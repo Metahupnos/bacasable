@@ -296,6 +296,36 @@ body {
   font-weight: 500;
 }
 
+/* Loading states */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  text-align: center;
+  color: #666;
+}
+
+.loading-spinner {
+  font-size: 40px;
+  animation: spin 2s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.settings-icon {
+  transition: transform 0.3s ease;
+}
+
+.settings-icon:hover {
+  transform: scale(1.1);
+}
+
 /* Responsive design */
 @media (max-width: 400px) {
   .mobile-container {

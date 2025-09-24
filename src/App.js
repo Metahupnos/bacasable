@@ -1,61 +1,58 @@
+import React, { useState, useEffect } from 'react';
 import './App.css';
-
-const portfolioData = [
-  {
-    name: "ISH COR S&P500",
-    subtitle: "U.ETF USD(ACC)-PT...",
-    price: "605,40 EUR | 354 u...",
-    value: "214.312,31 EUR",
-    change: "+3.246,59 EUR",
-    percentage: "+1,54%",
-    positive: true
-  },
-  {
-    name: "ISHAR.III PLC",
-    subtitle: "CORE MSCI WO...",
-    price: "107,11 EUR | 1.42...",
-    value: "152.524,64 EUR",
-    change: "+1.967,10 EUR",
-    percentage: "+1,31%",
-    positive: true
-  },
-  {
-    name: "ISHARES PLC",
-    subtitle: "CORE MSC E.M.I...",
-    price: "36,85 EUR | 2.56...",
-    value: "94.593,95 EUR",
-    change: "+4.615,11 EUR",
-    percentage: "+5,13%",
-    positive: true
-  },
-  {
-    name: "INVESCO MKS",
-    subtitle: "PLC MSCI WOR...",
-    price: "114,92 EUR | 79...",
-    value: "91.472,34 EUR",
-    change: "+1.108,88 EUR",
-    percentage: "+1,23%",
-    positive: true
-  },
-  {
-    name: "IN.M.III PLC-EQQQ",
-    subtitle: "NAS.-100 UC.ETF...",
-    price: "430,50 EUR | 14...",
-    value: "61.992,00 EUR",
-    change: "+143,79 EUR",
-    percentage: "+0,23%",
-    positive: true
-  }
-];
+import financeService from './services/financeApi';
 
 function App() {
+  const [portfolioData, setPortfolioData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalBalance, setTotalBalance] = useState({
+    total: '615.232,42',
+    change: '-1.108,05',
+    changePercentage: '-0,18',
+    positive: false
+  });
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+
+  useEffect(() => {
+    loadPortfolioData();
+
+    // Actualiser les données toutes les 30 secondes
+    const interval = setInterval(loadPortfolioData, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadPortfolioData = async () => {
+    try {
+      setLoading(true);
+      const data = await financeService.getAllPortfolioData();
+      setPortfolioData(data);
+
+      // Calculer le total du portefeuille
+      const balance = financeService.calculateTotalBalance(data);
+      setTotalBalance(balance);
+
+      setLastUpdate(new Date());
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
   return (
     <div className="App">
       <div className="mobile-container">
         {/* Header */}
         <div className="header">
           <div className="status-bar">
-            <span className="time">17:44</span>
+            <span className="time">{formatTime(lastUpdate)}</span>
             <div className="right-icons">
               <span className="signal">•••• ☰ 📶</span>
               <span className="battery">97</span>
@@ -63,12 +60,18 @@ function App() {
           </div>
 
           <div className="balance-section">
-            <div className="settings-icon">⚙️</div>
+            <div className="settings-icon" onClick={loadPortfolioData}>
+              {loading ? '🔄' : '⚙️'}
+            </div>
             <div className="balance-info">
-              <h1 className="total-balance">615.232,42 EUR</h1>
+              <h1 className="total-balance">{totalBalance.total} EUR</h1>
               <div className="balance-change">
-                <span className="change-amount">-1.108,05 EUR</span>
-                <span className="change-percentage negative">-0,18%</span>
+                <span className="change-amount">
+                  {totalBalance.positive ? '+' : ''}{totalBalance.change} EUR
+                </span>
+                <span className={`change-percentage ${totalBalance.positive ? 'positive' : 'negative'}`}>
+                  {totalBalance.positive ? '+' : ''}{totalBalance.changePercentage}%
+                </span>
               </div>
             </div>
             <div className="mail-icon">✉️</div>
@@ -94,27 +97,34 @@ function App() {
 
         {/* Portfolio list */}
         <div className="portfolio-list">
-          {portfolioData.map((item, index) => (
-            <div key={index} className="portfolio-item">
-              <div className="item-left">
-                <div className="color-indicator"></div>
-                <div className="item-info">
-                  <div className="item-name">{item.name}</div>
-                  <div className="item-subtitle">{item.subtitle}</div>
-                  <div className="item-price">{item.price}</div>
-                </div>
-              </div>
-              <div className="item-right">
-                <div className="item-value">{item.value}</div>
-                <div className={`item-change ${item.positive ? 'positive' : 'negative'}`}>
-                  {item.change}
-                </div>
-                <div className={`item-percentage ${item.positive ? 'positive' : 'negative'}`}>
-                  {item.percentage}
-                </div>
-              </div>
+          {loading && portfolioData.length === 0 ? (
+            <div className="loading-container">
+              <div className="loading-spinner">🔄</div>
+              <p>Chargement des données de marché...</p>
             </div>
-          ))}
+          ) : (
+            portfolioData.map((item, index) => (
+              <div key={index} className="portfolio-item">
+                <div className="item-left">
+                  <div className="color-indicator"></div>
+                  <div className="item-info">
+                    <div className="item-name">{item.name}</div>
+                    <div className="item-subtitle">{item.subtitle}</div>
+                    <div className="item-price">{item.price}</div>
+                  </div>
+                </div>
+                <div className="item-right">
+                  <div className="item-value">{item.value}</div>
+                  <div className={`item-change ${item.positive ? 'positive' : 'negative'}`}>
+                    {item.change}
+                  </div>
+                  <div className={`item-percentage ${item.positive ? 'positive' : 'negative'}`}>
+                    {item.percentage}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Bottom info */}
