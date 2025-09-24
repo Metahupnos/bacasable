@@ -86,14 +86,17 @@ class FinanceService {
           name: displayName,
           symbol,
           subtitle: this.getSubtitleForETF(displayName),
-          price: `${quote.price.toFixed(2)} EUR | ${holdings} u...`,
+          price: `${quote.price.toFixed(2)} EUR`,
+          quantity: holdings,
+          quantityText: `${holdings} unités`,
           value: `${(quote.price * holdings).toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR`,
           change: `${quote.change >= 0 ? '+' : ''}${(quote.change * holdings).toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR`,
           percentage: `${quote.changePercent >= 0 ? '+' : ''}${quote.changePercent.toFixed(2)}%`,
           positive: quote.change >= 0,
           rawPrice: quote.price,
           rawChange: quote.change,
-          rawPercentage: quote.changePercent
+          rawPercentage: quote.changePercent,
+          totalValue: quote.price * holdings
         });
 
         index++;

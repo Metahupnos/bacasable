@@ -110,16 +110,29 @@ function App() {
                   <div className="item-info">
                     <div className="item-name">{item.name}</div>
                     <div className="item-subtitle">{item.subtitle}</div>
-                    <div className="item-price">{item.price}</div>
+                    <div className="item-details">
+                      <span className="item-price">{item.price}</span>
+                      <span className="item-quantity">{item.quantityText}</span>
+                    </div>
                   </div>
                 </div>
+
+                <div className="item-center landscape-only">
+                  <div className="quantity-display">
+                    <div className="quantity-number">{item.quantity}</div>
+                    <div className="quantity-label">unités</div>
+                  </div>
+                </div>
+
                 <div className="item-right">
                   <div className="item-value">{item.value}</div>
-                  <div className={`item-change ${item.positive ? 'positive' : 'negative'}`}>
-                    {item.change}
-                  </div>
-                  <div className={`item-percentage ${item.positive ? 'positive' : 'negative'}`}>
-                    {item.percentage}
+                  <div className="performance-container">
+                    <div className={`item-change ${item.positive ? 'positive' : 'negative'}`}>
+                      {item.change}
+                    </div>
+                    <div className={`item-percentage ${item.positive ? 'positive' : 'negative'}`}>
+                      {item.percentage}
+                    </div>
                   </div>
                 </div>
               </div>
