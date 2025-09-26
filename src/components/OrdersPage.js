@@ -3,7 +3,7 @@ import transactionService from '../services/transactionService';
 
 function OrdersPage() {
   const transactions = transactionService.getAllTransactions();
-  const totalFees = transactionService.getTotalFees();
+  // const totalFees = transactionService.getTotalFees();
 
   // Données réelles du compte Bolero
   const totalDeposited = 603000; // 600 000 + 3 000 EUR

@@ -119,7 +119,7 @@ function StockChart({ symbol, etfName }) {
     if (symbol) {
       fetchHistoricalData(selectedPeriod);
     }
-  }, [symbol, selectedPeriod]);
+  }, [symbol, selectedPeriod, fetchHistoricalData]);
 
   const chartOptions = {
     responsive: true,

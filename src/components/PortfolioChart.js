@@ -67,7 +67,7 @@ function PortfolioChart() {
       // Créer une map de toutes les dates depuis le 29 août
       const allDates = new Map();
       const startDate = new Date('2025-08-29');
-      const today = new Date();
+      // const today = new Date();
 
       etfData.forEach(etf => {
         const result = etf.data.chart?.result?.[0];
@@ -327,7 +327,7 @@ function PortfolioChart() {
 
   useEffect(() => {
     createPortfolioChart();
-  }, []);
+  }, [createPortfolioChart]);
 
   const chartOptions = {
     responsive: true,

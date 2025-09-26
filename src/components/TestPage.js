@@ -207,7 +207,7 @@ function TestPage() {
     fetchTestData();
     fetchPortfolioComparison();
     fetchCurrentPortfolioValue();
-  }, []);
+  }, [fetchTestData, fetchPortfolioComparison, fetchCurrentPortfolioValue]);
 
   return (
     <div className="test-page" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
