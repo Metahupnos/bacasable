@@ -228,6 +228,35 @@ body {
   font-weight: 500;
 }
 
+/* Purchase information */
+.purchase-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.purchase-price {
+  font-size: 10px;
+  color: #666;
+  font-style: italic;
+}
+
+.purchase-gain {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.purchase-gain.positive {
+  color: #22c55e;
+}
+
+.purchase-gain.negative {
+  color: #ef4444;
+}
+
 /* Center column for landscape mode */
 .item-center {
   display: none;

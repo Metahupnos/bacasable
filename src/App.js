@@ -5,6 +5,7 @@ import financeService from './services/financeApi';
 function App() {
   const [portfolioData, setPortfolioData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('Valeur');
   const [totalBalance, setTotalBalance] = useState({
     total: '615.232,42',
     change: '-1.108,05',
@@ -13,23 +14,21 @@ function App() {
   });
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  useEffect(() => {
-    loadPortfolioData();
-
-    // Actualiser les données toutes les 30 secondes
-    const interval = setInterval(loadPortfolioData, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const loadPortfolioData = async () => {
     try {
       setLoading(true);
       const data = await financeService.getAllPortfolioData();
       setPortfolioData(data);
 
-      // Calculer le total du portefeuille
-      const balance = financeService.calculateTotalBalance(data);
+      // Calculer le total selon le filtre actif
+      let balance;
+      if (activeFilter === 'Depuis le début') {
+        balance = financeService.calculateSinceInception(data);
+      } else if (activeFilter === 'Aujourd\'hui') {
+        balance = financeService.calculateTodayBalance(data);
+      } else {
+        balance = financeService.calculateTotalBalance(data);
+      }
       setTotalBalance(balance);
 
       setLastUpdate(new Date());
@@ -40,11 +39,29 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    loadPortfolioData();
+
+    // Actualiser les données toutes les 30 secondes
+    const interval = setInterval(loadPortfolioData, 30000);
+
+    return () => clearInterval(interval);
+  }, [activeFilter]); // Se déclencher quand le filtre change
+
   const formatTime = (date) => {
     return date.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const getYahooFinanceUrl = (symbol) => {
+    return `https://finance.yahoo.com/quote/${symbol}`;
+  };
+
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+    // loadPortfolioData sera appelé automatiquement par useEffect
   };
   return (
     <div className="App">
@@ -89,9 +106,24 @@ function App() {
         <div className="filters">
           <div className="sort-icon">↕️</div>
           <div className="filter-options">
-            <span className="filter active">Valeur</span>
-            <span className="filter">Depuis le début</span>
-            <span className="filter">Aujourd'hui</span>
+            <span
+              className={`filter ${activeFilter === 'Valeur' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('Valeur')}
+            >
+              Valeur
+            </span>
+            <span
+              className={`filter ${activeFilter === 'Depuis le début' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('Depuis le début')}
+            >
+              Depuis le début
+            </span>
+            <span
+              className={`filter ${activeFilter === 'Aujourd\'hui' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('Aujourd\'hui')}
+            >
+              Aujourd'hui
+            </span>
           </div>
         </div>
 
@@ -104,7 +136,14 @@ function App() {
             </div>
           ) : (
             portfolioData.map((item, index) => (
-              <div key={index} className="portfolio-item">
+              <a
+                key={index}
+                href={getYahooFinanceUrl(item.symbol)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="portfolio-item"
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
                 <div className="item-left">
                   <div className="color-indicator"></div>
                   <div className="item-info">
@@ -113,6 +152,23 @@ function App() {
                     <div className="item-details">
                       <span className="item-price">{item.price}</span>
                       <span className="item-quantity">{item.quantityText}</span>
+                    </div>
+                    <div className="purchase-info">
+                      {activeFilter === 'Aujourd\'hui' ? (
+                        <>
+                          <span className="purchase-price">{item.openText || 'Ouverture indisponible'}</span>
+                          <span className={`purchase-gain ${item.dailyGain >= 0 ? 'positive' : 'negative'}`}>
+                            {item.dailyGainText || 'Variation indisponible'}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="purchase-price">{item.purchaseText}</span>
+                          <span className={`purchase-gain ${item.totalGainSincePurchase >= 0 ? 'positive' : 'negative'}`}>
+                            {item.gainSincePurchaseText}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -135,7 +191,7 @@ function App() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </a>
             ))
           )}
         </div>

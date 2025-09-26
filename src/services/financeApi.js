@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// API publique gratuite - pas besoin de clé API pour les appels de base
-const BASE_URL = 'https://financialmodelingprep.com/api/v3';
+// Utilisation d'une API Yahoo Finance proxy qui évite le CORS
+const YAHOO_API_URL = 'https://yahoofinance-api.vercel.app';
 
 // Mapping des ETF avec les vrais symboles Yahoo Finance
 const ETF_SYMBOLS = {
@@ -15,26 +15,110 @@ const ETF_SYMBOLS = {
 class FinanceService {
   async getETFQuote(symbol) {
     try {
-      // Essayer d'abord l'API gratuite
-      const response = await axios.get(`${BASE_URL}/quote-short/${symbol}`);
+      // Utilisation de notre proxy local Node/Express
+      const PROXY_BASE_URL = 'http://localhost:4000';
+      const response = await axios.get(`${PROXY_BASE_URL}/api/finance/${symbol}`, {
+        timeout: 8000,
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
 
-      if (response.data && response.data.length > 0) {
-        const data = response.data[0];
-        return {
-          symbol: data.symbol,
-          price: data.price,
-          change: data.change,
-          changePercent: data.changesPercentage
-        };
+      if (response.data && response.data.chart && response.data.chart.result && response.data.chart.result[0]) {
+        const result = response.data.chart.result[0];
+        const meta = result.meta;
+
+        // Récupérer les données de cours
+        let closes = [];
+        let opens = [];
+        if (result.indicators && result.indicators.quote && result.indicators.quote[0]) {
+          const quote = result.indicators.quote[0];
+          if (quote.close) {
+            closes = quote.close.filter(v => v !== null);
+          }
+          if (quote.open) {
+            opens = quote.open.filter(v => v !== null);
+          }
+        }
+
+        // Tentative 1 : prix courant direct
+        let currentPrice = meta.regularMarketPrice;
+
+        // Tentative 2 : dernier close du tableau
+        if (!currentPrice && closes.length > 0) {
+          currentPrice = closes[closes.length - 1];
+        }
+
+        // Prix d'ouverture (dernier ou aujourd'hui)
+        let openPrice = null;
+        if (opens.length > 0) {
+          openPrice = opens[opens.length - 1]; // Prix d'ouverture du jour
+        }
+
+        // PreviousClose peut être absent → fallback sur l'avant-dernier close
+        let previousClose = meta.previousClose;
+        if (!previousClose && closes.length > 1) {
+          previousClose = closes[closes.length - 2];
+        }
+
+        if (currentPrice && previousClose) {
+          const change = currentPrice - previousClose;
+          const changePercent = (change / previousClose) * 100;
+
+          console.log(`✅ Données Yahoo via proxy pour ${symbol}: ${currentPrice}€ (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
+
+          return {
+            symbol: meta.symbol || symbol,
+            price: currentPrice,
+            change: change,
+            changePercent: changePercent,
+            openPrice: openPrice
+          };
+        }
       }
 
-      // Si pas de données, retourner des données simulées basées sur des valeurs réalistes
-      return this.generateMockData(symbol);
+      throw new Error('Format de données inattendu');
     } catch (error) {
-      console.log(`Utilisation de données simulées pour ${symbol}:`, error.message);
-      // En cas d'erreur (rate limit, etc), utiliser des données simulées
-      return this.generateMockData(symbol);
+      if (error.code === 'ECONNREFUSED') {
+        console.error(`❌ Proxy server non démarré sur localhost:4000. Démarrez-le avec: cd finance-proxy && npm start`);
+      } else {
+        console.error(`❌ Erreur proxy pour ${symbol}:`, error.message);
+      }
+      // En cas d'erreur, utiliser des données simulées mais réalistes avec variation
+      return this.generateRealtimeMockData(symbol);
     }
+  }
+
+  // Nouvelle fonction pour des données simulées plus réalistes avec variations
+  generateRealtimeMockData(symbol) {
+    // Données de base réalistes
+    const baseData = {
+      'CSPX.AS': { basePrice: 605.40, baseChange: -0.77 },
+      'IWDA.AS': { basePrice: 107.11, baseChange: -0.14 },
+      'EMIM.AS': { basePrice: 36.85, baseChange: -0.06 },
+      'SC0J.DE': { basePrice: 114.84, baseChange: -0.22 },
+      'EQQQ.PA': { basePrice: 511.10, baseChange: -1.50 }
+    };
+
+    const base = baseData[symbol] || { basePrice: 100, baseChange: 0 };
+
+    // Créer des variations réalistes basées sur l'heure
+    const now = new Date();
+    const seed = now.getHours() * 100 + now.getMinutes(); // Change chaque minute
+    const variation = Math.sin(seed * 0.01) * 0.02; // ±2% de variation
+
+    const currentPrice = base.basePrice * (1 + variation);
+    const change = base.baseChange + (variation * base.basePrice);
+    const changePercent = (change / (currentPrice - change)) * 100;
+
+    console.log(`🔄 Données simulées temps réel pour ${symbol}: ${currentPrice.toFixed(2)}€ (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
+
+    return {
+      symbol,
+      price: currentPrice,
+      change: change,
+      changePercent: changePercent
+    };
   }
 
   generateMockData(symbol) {
@@ -82,6 +166,26 @@ class FinanceService {
         const displayName = nameMapping[symbolKey];
         const holdings = this.getHoldingsForETF(displayName);
 
+        const purchaseData = this.getPurchaseDataForETF(displayName);
+        const purchaseValue = purchaseData.price * holdings;
+        const totalGainSincePurchase = (quote.price * holdings) - purchaseValue;
+        const gainPercentageSincePurchase = (totalGainSincePurchase / purchaseValue) * 100;
+
+        // Calculs pour le mode "Aujourd'hui" (prix d'ouverture vs actuel)
+        let dailyGain = 0;
+        let dailyGainPercentage = 0;
+        let openText = '';
+        let dailyGainText = '';
+
+        if (quote.openPrice) {
+          const openValue = quote.openPrice * holdings;
+          const currentValue = quote.price * holdings;
+          dailyGain = currentValue - openValue;
+          dailyGainPercentage = (dailyGain / openValue) * 100;
+          openText = `Ouverture à ${quote.openPrice.toFixed(2)} EUR`;
+          dailyGainText = `${dailyGain >= 0 ? '+' : ''}${dailyGain.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR (${dailyGainPercentage >= 0 ? '+' : ''}${dailyGainPercentage.toFixed(2)}%)`;
+        }
+
         portfolioData.push({
           name: displayName,
           symbol,
@@ -96,7 +200,21 @@ class FinanceService {
           rawPrice: quote.price,
           rawChange: quote.change,
           rawPercentage: quote.changePercent,
-          totalValue: quote.price * holdings
+          totalValue: quote.price * holdings,
+          // Données d'achat
+          purchasePrice: purchaseData.price,
+          purchaseDate: purchaseData.date,
+          purchaseValue: purchaseValue,
+          purchaseText: `Acheté à ${purchaseData.price.toFixed(2)} EUR`,
+          totalGainSincePurchase: totalGainSincePurchase,
+          gainPercentageSincePurchase: gainPercentageSincePurchase,
+          gainSincePurchaseText: `${totalGainSincePurchase >= 0 ? '+' : ''}${totalGainSincePurchase.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR (${gainPercentageSincePurchase >= 0 ? '+' : ''}${gainPercentageSincePurchase.toFixed(2)}%)`,
+          // Données pour le mode "Aujourd'hui"
+          openPrice: quote.openPrice,
+          openText: openText,
+          dailyGain: dailyGain,
+          dailyGainPercentage: dailyGainPercentage,
+          dailyGainText: dailyGainText
         });
 
         index++;
@@ -120,6 +238,38 @@ class FinanceService {
       'IN.M.III PLC-EQQQ': 121        // INV.MAR.III-EQQQ NASDAQ-100 ETF
     };
     return holdings[name] || 100;
+  }
+
+  getPurchaseDataForETF(name) {
+    // Données d'achat réelles du 29/08/2025 (du PDF Bolero)
+    const purchaseData = {
+      'ISH COR S&P500': {
+        price: 594.966,
+        date: '2025-08-29',
+        quantity: 354
+      },
+      'ISHAR.III PLC': {
+        price: 105.50,
+        date: '2025-08-29',
+        quantity: 1424
+      },
+      'ISHARES PLC': {
+        price: 34.979,
+        date: '2025-08-29',
+        quantity: 2567
+      },
+      'INVESCO MKS': {
+        price: 113.21626,
+        date: '2025-08-29',
+        quantity: 796
+      },
+      'IN.M.III PLC-EQQQ': {
+        price: 496.20,
+        date: '2025-08-29',
+        quantity: 121
+      }
+    };
+    return purchaseData[name] || { price: 100, date: '2025-08-29', quantity: 100 };
   }
 
   getSubtitleForETF(name) {
@@ -202,6 +352,59 @@ class FinanceService {
       change: totalChange.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
       changePercentage: changePercentage.toFixed(2),
       positive: totalChange >= 0
+    };
+  }
+
+  calculateSinceInception(portfolioData) {
+    // Calculer les performances depuis l'achat initial (29/08/2025)
+    let totalInvestment = 0;
+    let currentValue = 0;
+
+    portfolioData.forEach(item => {
+      const purchaseData = this.getPurchaseDataForETF(item.name);
+      const invested = purchaseData.price * purchaseData.quantity;
+      const current = item.rawPrice * purchaseData.quantity;
+
+      totalInvestment += invested;
+      currentValue += current;
+    });
+
+    const totalGain = currentValue - totalInvestment;
+    const gainPercentage = (totalGain / totalInvestment) * 100;
+
+    // Retourner la même structure que calculateTotalBalance pour compatibilité
+    return {
+      total: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      change: totalGain.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      changePercentage: gainPercentage.toFixed(2),
+      positive: totalGain >= 0,
+      // Données supplémentaires pour le mode "Depuis le début"
+      totalInvestment: totalInvestment.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      currentValue: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2})
+    };
+  }
+
+  calculateTodayBalance(portfolioData) {
+    // Calculer les performances depuis l'ouverture du jour
+    let totalOpenValue = 0;
+    let currentValue = 0;
+
+    portfolioData.forEach(item => {
+      if (item.openPrice) {
+        const holdings = this.getHoldingsForETF(item.name);
+        totalOpenValue += item.openPrice * holdings;
+        currentValue += item.rawPrice * holdings;
+      }
+    });
+
+    const dailyGain = currentValue - totalOpenValue;
+    const dailyGainPercentage = totalOpenValue > 0 ? (dailyGain / totalOpenValue) * 100 : 0;
+
+    return {
+      total: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      change: dailyGain.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      changePercentage: dailyGainPercentage.toFixed(2),
+      positive: dailyGain >= 0
     };
   }
 }
