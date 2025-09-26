@@ -373,29 +373,24 @@ class FinanceService {
   }
 
   calculateSinceInception(portfolioData) {
-    // Calculer la différence simple : valeur portefeuille au 29/08 vs valeur actuelle
-    let currentValue = 0;
-
-    // Valeur de départ du portefeuille au 29/08/2025 (les 5 ETF originaux)
-    const startingValue =
-      354 * 594.966 +     // CSPX.AS - 354 unités à 594,966 EUR
-      1424 * 105.4987218487395 + // IWDA.AS - 1424 unités au prix moyen pondéré
-      2567 * 34.979 +     // EMIM.AS - 2567 unités à 34,979 EUR
-      796 * 113.21626 +   // SC0J.DE - 796 unités à 113,21626 EUR
-      121 * 496.2;        // EQQQ.DE - 121 unités à 496,2 EUR (vendu plus tard)
+    // Montant réellement investi = Capital déposé - Liquidités restantes
+    const totalDeposited = 603000; // 600 000 + 3 000 EUR
+    const cashRemaining = 337.18;
+    const realInvestedAmount = totalDeposited - cashRemaining; // 602 662.82 EUR
 
     // Valeur actuelle du portefeuille (les 5 ETF actuels)
+    let currentValue = 0;
     portfolioData.forEach(item => {
       const purchaseData = this.getPurchaseDataForETF(item.name);
       currentValue += item.rawPrice * purchaseData.quantity;
     });
 
-    const totalGain = currentValue - startingValue;
-    const gainPercentage = (totalGain / startingValue) * 100;
+    const totalGain = currentValue - realInvestedAmount;
+    const gainPercentage = (totalGain / realInvestedAmount) * 100;
 
-    console.log(`💰 calculateSinceInception: Valeur de départ (29/08) = ${startingValue.toLocaleString('fr-FR')} EUR`);
+    console.log(`💰 calculateSinceInception: Montant investi réel = ${realInvestedAmount.toLocaleString('fr-FR')} EUR`);
     console.log(`💰 calculateSinceInception: Valeur actuelle = ${currentValue.toLocaleString('fr-FR')} EUR`);
-    console.log(`💰 calculateSinceInception: Gain simple = ${totalGain.toLocaleString('fr-FR')} EUR (${gainPercentage.toFixed(2)}%)`);
+    console.log(`💰 calculateSinceInception: Gain réel = ${totalGain.toLocaleString('fr-FR')} EUR (${gainPercentage.toFixed(2)}%)`);
 
     return {
       total: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
@@ -403,7 +398,7 @@ class FinanceService {
       changePercentage: gainPercentage.toFixed(2),
       positive: totalGain >= 0,
       // Données supplémentaires pour le mode "Depuis le début"
-      startingValue: startingValue.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      startingValue: realInvestedAmount.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
       currentValue: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2})
     };
   }
