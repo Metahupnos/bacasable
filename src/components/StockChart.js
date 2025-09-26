@@ -28,6 +28,7 @@ function StockChart({ symbol, etfName }) {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [periodPerformance, setPeriodPerformance] = useState(null);
 
   const periods = [
     { key: '1d', label: '1J' },
@@ -88,10 +89,22 @@ function StockChart({ symbol, etfName }) {
       // Utiliser les prix absolus directement
       const firstPrice = priceData[0];
 
-      // Déterminer la couleur du graphique
+      // Calculer la performance de la période
       const lastPrice = priceData[priceData.length - 1];
+      const performanceValue = lastPrice - firstPrice;
+      const performancePercent = ((lastPrice - firstPrice) / firstPrice) * 100;
       const isPositive = lastPrice >= firstPrice;
       const color = isPositive ? '#51CF66' : '#FF6B6B';
+
+      // Mettre à jour les données de performance
+      setPeriodPerformance({
+        value: performanceValue,
+        percent: performancePercent,
+        isPositive: isPositive,
+        firstPrice: firstPrice,
+        lastPrice: lastPrice,
+        period: period
+      });
 
       setChartData({
         labels,
@@ -190,6 +203,33 @@ function StockChart({ symbol, etfName }) {
           </button>
         ))}
       </div>
+
+      {/* Indicateur de performance pour la période */}
+      {periodPerformance && (
+        <div className="period-performance" style={{
+          padding: '10px 15px',
+          marginBottom: '10px',
+          backgroundColor: periodPerformance.isPositive ? '#e8f5e8' : '#ffeaea',
+          borderRadius: '8px',
+          border: `1px solid ${periodPerformance.isPositive ? '#51CF66' : '#FF6B6B'}`,
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+            Performance sur {periods.find(p => p.key === periodPerformance.period)?.label || periodPerformance.period}
+          </div>
+          <div style={{
+            fontSize: '16px',
+            fontWeight: 'bold',
+            color: periodPerformance.isPositive ? '#51CF66' : '#FF6B6B'
+          }}>
+            {periodPerformance.isPositive ? '+' : ''}{periodPerformance.value.toFixed(2)} EUR
+            ({periodPerformance.isPositive ? '+' : ''}{periodPerformance.percent.toFixed(2)}%)
+          </div>
+          <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+            {periodPerformance.firstPrice.toFixed(2)} EUR → {periodPerformance.lastPrice.toFixed(2)} EUR
+          </div>
+        </div>
+      )}
 
       {/* Graphique */}
       <div className="chart-container">
