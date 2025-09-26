@@ -44,7 +44,10 @@ function StockChart({ symbol, etfName }) {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:4001/api/history/${symbol}/${period}`);
+      // Utiliser Netlify Function en production ou proxy local en développement
+      const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
+      const apiPath = process.env.NODE_ENV === 'production' ? `/.netlify/functions/history/${symbol}/${period}` : `/api/history/${symbol}/${period}`;
+      const response = await fetch(`${baseUrl}${apiPath}`);
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération des données');
       }

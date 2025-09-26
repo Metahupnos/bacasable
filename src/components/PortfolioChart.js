@@ -54,7 +54,10 @@ function PortfolioChart() {
       // Récupérer les données historiques pour tous les ETF (y compris EQQQ.DE vendu)
       // Utiliser 1m pour avoir des données plus récentes
       const promises = portfolioConfig.map(async (etf) => {
-        const response = await fetch(`http://localhost:4001/api/history/${etf.symbol}/1m`);
+        // Utiliser Netlify Function en production ou proxy local en développement
+          const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
+          const apiPath = process.env.NODE_ENV === 'production' ? `/.netlify/functions/history/${etf.symbol}/1m` : `/api/history/${etf.symbol}/1m`;
+          const response = await fetch(`${baseUrl}${apiPath}`);
         if (!response.ok) {
           throw new Error(`Erreur pour ${etf.symbol}: ${response.status}`);
         }
@@ -239,7 +242,10 @@ function PortfolioChart() {
           ];
 
           for (const etf of currentComposition) {
-            const response = await fetch(`http://localhost:4001/api/history/${etf.symbol}/1d`);
+            // Utiliser Netlify Function en production ou proxy local en développement
+            const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
+            const apiPath = process.env.NODE_ENV === 'production' ? `/.netlify/functions/history/${etf.symbol}/1d` : `/api/history/${etf.symbol}/1d`;
+            const response = await fetch(`${baseUrl}${apiPath}`);
             if (response.ok) {
               const data = await response.json();
               const result = data.chart?.result?.[0];
