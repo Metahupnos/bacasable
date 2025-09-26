@@ -3,7 +3,6 @@ import './App.css';
 import financeService from './services/financeApi';
 import OrdersPage from './components/OrdersPage';
 import StockChart from './components/StockChart';
-import TestPage from './components/TestPage';
 import PortfolioChart from './components/PortfolioChart';
 
 function App() {
@@ -113,12 +112,6 @@ function App() {
               onClick={() => setActivePage('Ordres')}
             >
               Ordres
-            </div>
-            <div
-              className={`tab ${activePage === 'Test' ? 'active' : ''}`}
-              onClick={() => setActivePage('Test')}
-            >
-              🧪 Test
             </div>
           </div>
         </div>
@@ -258,8 +251,6 @@ function App() {
           </>
         ) : activePage === 'Ordres' ? (
           <OrdersPage />
-        ) : activePage === 'Test' ? (
-          <TestPage />
         ) : (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
             <p>Page en cours de développement</p>
