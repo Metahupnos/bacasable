@@ -345,14 +345,42 @@ function PortfolioChart() {
       tooltip: {
         mode: 'index',
         intersect: false,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        titleColor: '#000',
+        bodyColor: '#000',
         borderColor: '#ddd',
         borderWidth: 1,
+        displayColors: false,
+        titleFont: {
+          weight: 'normal'
+        },
+        bodyFont: {
+          weight: 'normal'
+        },
+        bodySpacing: 4,
         callbacks: {
+          title: function(context) {
+            // Récupérer la date à partir du label et la convertir au format dd/mm/yyyy
+            const label = context[0].label; // Format "dd/mm" du graphique
+            const currentYear = new Date().getFullYear();
+            const dateValue = `${label}/${currentYear}`;
+            return `Date:${' '.repeat(20 - dateValue.length)}${dateValue}`;
+          },
           label: function(context) {
-            return `Valeur: ${context.parsed.y.toLocaleString('fr-FR', {minimumFractionDigits: 0})} EUR`;
+            const portfolioValue = context.parsed.y;
+            const realInvestedAmount = 603000 - 337.18; // 602 662.82 EUR
+            const gainLoss = portfolioValue - realInvestedAmount;
+            const isPositive = gainLoss >= 0;
+
+            const valeurText = Math.round(portfolioValue).toLocaleString('fr-FR');
+            const gainText = `${isPositive ? '+' : ''}${Math.round(gainLoss).toLocaleString('fr-FR')}`;
+
+            const gainLabel = isPositive ? 'Gain:' : 'Perte:';
+
+            return [
+              `Valeur:${' '.repeat(20 - valeurText.length)}${valeurText}`,
+              `${gainLabel}${' '.repeat(20 - gainText.length)}${gainText}`
+            ];
           }
         }
       }
@@ -439,7 +467,7 @@ function PortfolioChart() {
     }}>
       <div style={{ marginBottom: '15px' }}>
         <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>
-          📈 Évolution du portefeuille
+          Évolution du portefeuille
         </h3>
         <div style={{
           display: 'flex',
