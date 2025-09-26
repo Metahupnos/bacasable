@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import financeService from './services/financeApi';
 
@@ -14,7 +14,7 @@ function App() {
   });
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  const loadPortfolioData = async () => {
+  const loadPortfolioData = useCallback(async () => {
     try {
       setLoading(true);
       const data = await financeService.getAllPortfolioData();
@@ -37,16 +37,16 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeFilter]);
 
   useEffect(() => {
     loadPortfolioData();
 
-    // Actualiser les données toutes les 30 secondes
-    const interval = setInterval(loadPortfolioData, 30000);
+    // Actualiser les données toutes les 5 secondes
+    const interval = setInterval(loadPortfolioData, 5000);
 
     return () => clearInterval(interval);
-  }, [activeFilter, loadPortfolioData]); // Se déclencher quand le filtre change
+  }, [loadPortfolioData]); // loadPortfolioData est stable grâce à useCallback
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('fr-FR', {
@@ -78,7 +78,7 @@ function App() {
 
           <div className="balance-section">
             <div className="settings-icon" onClick={loadPortfolioData}>
-              {loading ? '🔄' : '⚙️'}
+              ⚙️
             </div>
             <div className="balance-info">
               <h1 className="total-balance">{totalBalance.total} EUR</h1>
