@@ -234,7 +234,7 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                              color: '#007bff',
+                              color: '#008EB7',
                               textDecoration: 'none',
                               fontSize: '12px'
                             }}
