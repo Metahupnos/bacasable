@@ -8,7 +8,7 @@ const ETF_SYMBOLS = {
   'IWDA.AS': 'IWDA.AS',  // iShares Core MSCI World
   'EMIM.AS': 'EMIM.AS',  // iShares Core MSCI Emerging Markets
   'SC0J.DE': 'SC0J.DE',  // Invesco MSCI World
-  'EQQQ.PA': 'EQQQ.PA'   // Invesco EQQQ Nasdaq-100
+  'EQEU.DE': 'EQEU.DE'   // Invesco EQQQ NASDAQ-100 UCITS ETF (Accumulatif) - remplace EQQQ.DE vendu le 19/09
 };
 
 class FinanceService {
@@ -96,7 +96,7 @@ class FinanceService {
       'IWDA.AS': { basePrice: 107.11, baseChange: -0.14 },
       'EMIM.AS': { basePrice: 36.85, baseChange: -0.06 },
       'SC0J.DE': { basePrice: 114.84, baseChange: -0.22 },
-      'EQQQ.PA': { basePrice: 511.10, baseChange: -1.50 }
+      'EQEU.DE': { basePrice: 428.57, baseChange: 0.00 }
     };
 
     const base = baseData[symbol] || { basePrice: 100, baseChange: 0 };
@@ -156,7 +156,7 @@ class FinanceService {
         'IWDA.AS': 'ISHAR.III PLC',
         'EMIM.AS': 'ISHARES PLC',
         'SC0J.DE': 'INVESCO MKS',
-        'EQQQ.PA': 'IN.M.III PLC-EQQQ'
+        'EQEU.DE': 'INVESCO EQQQ NASDAQ-100'
       };
 
       let index = 0;
@@ -166,22 +166,25 @@ class FinanceService {
         const holdings = this.getHoldingsForETF(displayName);
 
         const purchaseData = this.getPurchaseDataForETF(displayName);
-        const purchaseValue = purchaseData.price * holdings;
-        const totalGainSincePurchase = (quote.price * holdings) - purchaseValue;
-        const gainPercentageSincePurchase = (totalGainSincePurchase / purchaseValue) * 100;
+        const purchaseValue = purchaseData.totalPurchaseValue || (purchaseData.price * holdings);
+        const totalInvestmentWithFees = purchaseValue + purchaseData.fees; // Inclure les frais
+        const currentValue = quote.price * holdings;
+        const totalGainSincePurchase = currentValue - totalInvestmentWithFees;
+        const gainPercentageSincePurchase = (totalGainSincePurchase / totalInvestmentWithFees) * 100;
 
-        // Calculs pour le mode "Aujourd'hui" (prix d'ouverture vs actuel)
+        // Calculs pour le mode "Aujourd'hui" (previous close vs actuel)
         let dailyGain = 0;
         let dailyGainPercentage = 0;
-        let openText = '';
+        let previousCloseText = '';
         let dailyGainText = '';
 
-        if (quote.openPrice) {
-          const openValue = quote.openPrice * holdings;
-          const currentValue = quote.price * holdings;
-          dailyGain = currentValue - openValue;
-          dailyGainPercentage = (dailyGain / openValue) * 100;
-          openText = `Ouverture à ${quote.openPrice.toFixed(2)} EUR`;
+        // Utiliser le change et changePercent déjà calculés par getETFQuote
+        dailyGain = quote.change * holdings;
+        dailyGainPercentage = quote.changePercent;
+
+        if (quote.price && quote.change) {
+          const previousClose = quote.price - quote.change;
+          previousCloseText = `Clôture précédente: ${previousClose.toFixed(2)} EUR`;
           dailyGainText = `${dailyGain >= 0 ? '+' : ''}${dailyGain.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR (${dailyGainPercentage >= 0 ? '+' : ''}${dailyGainPercentage.toFixed(2)}%)`;
         }
 
@@ -205,15 +208,20 @@ class FinanceService {
           purchaseDate: purchaseData.date,
           purchaseValue: purchaseValue,
           purchaseText: `Acheté à ${purchaseData.price.toFixed(2)} EUR`,
+          initialTotalText: `Valeur initiale: ${totalInvestmentWithFees.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR`,
+          feesDisclaimer: purchaseData.fees > 0 ? `(frais réels: ${purchaseData.fees.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR)` : `(aucun frais répertorié)`,
           totalGainSincePurchase: totalGainSincePurchase,
           gainPercentageSincePurchase: gainPercentageSincePurchase,
           gainSincePurchaseText: `${totalGainSincePurchase >= 0 ? '+' : ''}${totalGainSincePurchase.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR (${gainPercentageSincePurchase >= 0 ? '+' : ''}${gainPercentageSincePurchase.toFixed(2)}%)`,
+          sinceBeginningChangeText: `${totalGainSincePurchase >= 0 ? '+' : ''}${totalGainSincePurchase.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR`,
+          sinceBeginningPercentageText: `${gainPercentageSincePurchase >= 0 ? '+' : ''}${gainPercentageSincePurchase.toFixed(2)}%`,
           // Données pour le mode "Aujourd'hui"
-          openPrice: quote.openPrice,
-          openText: openText,
+          previousCloseText: previousCloseText,
           dailyGain: dailyGain,
           dailyGainPercentage: dailyGainPercentage,
-          dailyGainText: dailyGainText
+          dailyGainText: dailyGainText,
+          dailyChangeText: `${dailyGain >= 0 ? '+' : ''}${dailyGain.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR`,
+          dailyPercentageText: `${dailyGainPercentage >= 0 ? '+' : ''}${dailyGainPercentage.toFixed(2)}%`
         });
 
         index++;
@@ -228,47 +236,57 @@ class FinanceService {
   }
 
   getHoldingsForETF(name) {
-    // Vraies quantités d'unités détenues pour chaque ETF
+    // Vraies quantités d'unités détenues pour chaque ETF (mise à jour après vente EQQQ.DE le 19/09)
     const holdings = {
-      'ISH COR S&P500': 354,           // IS CO S&P500 U.ETF USD
-      'ISHAR.III PLC': 1424,          // ISHAR.III PLC CORE MSCI WORLD
-      'ISHARES PLC': 2567,            // ISHARES PLC CORE MSC E.M.IM UC
-      'INVESCO MKS': 796,             // INVESCO MKS PLC MSCI WORLD U.ETF
-      'IN.M.III PLC-EQQQ': 121        // INV.MAR.III-EQQQ NASDAQ-100 ETF
+      'ISH COR S&P500': 354,           // IS CO S&P500 U.ETF USD - 354 unités (3×118) à 594,966 EUR
+      'ISHAR.III PLC': 1424,          // ISHAR.III PLC CORE MSCI WORLD - 1424 unités (475+475+474)
+      'ISHARES PLC': 2567,            // ISHARES PLC CORE MSC E.M.IM UC - 2567 unités à 34,979 EUR
+      'INVESCO MKS': 796,             // INVESCO MKS PLC MSCI WORLD U.ETF - 796 unités à 113,21626 EUR
+      'INVESCO EQQQ NASDAQ-100': 144  // INVESCO EQQQ NASDAQ-100 UCITS ETF (accumulatif) - 144 unités à 428,57049 EUR
     };
     return holdings[name] || 100;
   }
 
   getPurchaseDataForETF(name) {
-    // Données d'achat réelles du 29/08/2025 (du PDF Bolero)
+    // Données d'achat réelles (mise à jour après vente EQQQ.DE le 19/09)
     const purchaseData = {
       'ISH COR S&P500': {
         price: 594.966,
         date: '2025-08-29',
-        quantity: 354
+        quantity: 354,
+        fees: 447.75, // 3×(65€ courtage + 84,25€ impôt de bourse)
+        totalPurchaseValue: 210617.97 // 3 × 70,205.99 EUR
       },
       'ISHAR.III PLC': {
-        price: 105.50,
+        price: 105.4987218487395, // Prix moyen pondéré exact: 150227.26 ÷ 1424
         date: '2025-08-29',
-        quantity: 1424
+        quantity: 1424,
+        fees: 330.28, // 3×50€ courtage + (60,14+60,14+60,00)€ impôt de bourse
+        totalPurchaseValue: 150227.26 // Valeur exacte du PDF pour éviter les erreurs d'arrondi
       },
       'ISHARES PLC': {
         price: 34.979,
         date: '2025-08-29',
-        quantity: 2567
+        quantity: 2567,
+        fees: 187.75, // 80€ courtage + 107,75€ impôt de bourse
+        totalPurchaseValue: 89791.09 // Valeur exacte du PDF
       },
       'INVESCO MKS': {
         price: 113.21626,
         date: '2025-08-29',
-        quantity: 796
+        quantity: 796,
+        fees: 243.32, // 135,18€ courtage + 108,14€ impôt de bourse
+        totalPurchaseValue: 90120.14 // Valeur exacte du PDF
       },
-      'IN.M.III PLC-EQQQ': {
-        price: 496.20,
-        date: '2025-08-29',
-        quantity: 121
+      'INVESCO EQQQ NASDAQ-100': {
+        price: 428.57049, // Prix d'achat du 19/09/2025 (remplace EQQQ.DE vendu)
+        date: '2025-09-19',
+        quantity: 144,
+        fees: 134.06, // 60€ courtage + 74,06€ impôt de bourse
+        totalPurchaseValue: 61714.15 // Valeur exacte du PDF
       }
     };
-    return purchaseData[name] || { price: 100, date: '2025-08-29', quantity: 100 };
+    return purchaseData[name] || { price: 100, date: '2025-08-29', quantity: 100, fees: 0 };
   }
 
   getSubtitleForETF(name) {
@@ -277,7 +295,7 @@ class FinanceService {
       'ISHAR.III PLC': 'CORE MSCI WORLD',
       'ISHARES PLC': 'CORE MSC E.M.IM UC',
       'INVESCO MKS': 'PLC MSCI WORLD U.ETF',
-      'IN.M.III PLC-EQQQ': 'NASDAQ-100 ETF'
+      'INVESCO EQQQ NASDAQ-100': 'NASDAQ-100 UCITS ETF (ACC)'
     };
     return subtitles[name] || 'ETF...';
   }
@@ -355,55 +373,69 @@ class FinanceService {
   }
 
   calculateSinceInception(portfolioData) {
-    // Calculer les performances depuis l'achat initial (29/08/2025)
-    let totalInvestment = 0;
+    // Calculer la différence simple : valeur portefeuille au 29/08 vs valeur actuelle
     let currentValue = 0;
 
+    // Valeur de départ du portefeuille au 29/08/2025 (les 5 ETF originaux)
+    const startingValue =
+      354 * 594.966 +     // CSPX.AS - 354 unités à 594,966 EUR
+      1424 * 105.4987218487395 + // IWDA.AS - 1424 unités au prix moyen pondéré
+      2567 * 34.979 +     // EMIM.AS - 2567 unités à 34,979 EUR
+      796 * 113.21626 +   // SC0J.DE - 796 unités à 113,21626 EUR
+      121 * 496.2;        // EQQQ.DE - 121 unités à 496,2 EUR (vendu plus tard)
+
+    // Valeur actuelle du portefeuille (les 5 ETF actuels)
     portfolioData.forEach(item => {
       const purchaseData = this.getPurchaseDataForETF(item.name);
-      const invested = purchaseData.price * purchaseData.quantity;
-      const current = item.rawPrice * purchaseData.quantity;
-
-      totalInvestment += invested;
-      currentValue += current;
+      currentValue += item.rawPrice * purchaseData.quantity;
     });
 
-    const totalGain = currentValue - totalInvestment;
-    const gainPercentage = (totalGain / totalInvestment) * 100;
+    const totalGain = currentValue - startingValue;
+    const gainPercentage = (totalGain / startingValue) * 100;
 
-    // Retourner la même structure que calculateTotalBalance pour compatibilité
+    console.log(`💰 calculateSinceInception: Valeur de départ (29/08) = ${startingValue.toLocaleString('fr-FR')} EUR`);
+    console.log(`💰 calculateSinceInception: Valeur actuelle = ${currentValue.toLocaleString('fr-FR')} EUR`);
+    console.log(`💰 calculateSinceInception: Gain simple = ${totalGain.toLocaleString('fr-FR')} EUR (${gainPercentage.toFixed(2)}%)`);
+
     return {
       total: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
       change: totalGain.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
       changePercentage: gainPercentage.toFixed(2),
       positive: totalGain >= 0,
       // Données supplémentaires pour le mode "Depuis le début"
-      totalInvestment: totalInvestment.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      startingValue: startingValue.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
       currentValue: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2})
     };
   }
 
   calculateTodayBalance(portfolioData) {
-    // Calculer les performances depuis l'ouverture du jour
-    let totalOpenValue = 0;
+    // Calculer les performances depuis la clôture précédente
+    let totalDailyGain = 0;
     let currentValue = 0;
 
     portfolioData.forEach(item => {
-      if (item.openPrice) {
+      if (item.rawPrice && item.dailyGain !== undefined) {
         const holdings = this.getHoldingsForETF(item.name);
-        totalOpenValue += item.openPrice * holdings;
         currentValue += item.rawPrice * holdings;
+        totalDailyGain += item.dailyGain;
       }
     });
 
-    const dailyGain = currentValue - totalOpenValue;
-    const dailyGainPercentage = totalOpenValue > 0 ? (dailyGain / totalOpenValue) * 100 : 0;
+    const totalDailyGainPercentage = portfolioData.length > 0 ?
+      portfolioData.reduce((sum, item) => {
+        if (item.dailyGainPercentage !== undefined) {
+          const holdings = this.getHoldingsForETF(item.name);
+          const weight = (item.rawPrice * holdings) / currentValue;
+          return sum + (item.dailyGainPercentage * weight);
+        }
+        return sum;
+      }, 0) : 0;
 
     return {
       total: currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
-      change: dailyGain.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
-      changePercentage: dailyGainPercentage.toFixed(2),
-      positive: dailyGain >= 0
+      change: totalDailyGain.toLocaleString('fr-FR', {minimumFractionDigits: 2}),
+      changePercentage: totalDailyGainPercentage.toFixed(2),
+      positive: totalDailyGain >= 0
     };
   }
 }

@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import financeService from './services/financeApi';
+import OrdersPage from './components/OrdersPage';
+import StockChart from './components/StockChart';
+import TestPage from './components/TestPage';
+import PortfolioChart from './components/PortfolioChart';
 
 function App() {
   const [portfolioData, setPortfolioData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('Valeur');
+  const [activeFilter, setActiveFilter] = useState('Aujourd\'hui');
+  const [activePage, setActivePage] = useState('Portefeuille');
   const [totalBalance, setTotalBalance] = useState({
     total: '615.232,42',
     change: '-1.108,05',
@@ -13,6 +18,7 @@ function App() {
     positive: false
   });
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [selectedETF, setSelectedETF] = useState(null);
 
   const loadPortfolioData = useCallback(async () => {
     try {
@@ -42,8 +48,8 @@ function App() {
   useEffect(() => {
     loadPortfolioData();
 
-    // Actualiser les données toutes les 5 secondes
-    const interval = setInterval(loadPortfolioData, 5000);
+    // Actualiser les données toutes les 30 secondes pour éviter le rate limiting
+    const interval = setInterval(loadPortfolioData, 30000);
 
     return () => clearInterval(interval);
   }, [loadPortfolioData]); // loadPortfolioData est stable grâce à useCallback
@@ -96,105 +102,169 @@ function App() {
 
           {/* Navigation tabs */}
           <div className="nav-tabs">
-            <div className="tab active">Portefeuille</div>
-            <div className="tab">Comptes</div>
-            <div className="tab">Ordres</div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="filters">
-          <div className="sort-icon">↕️</div>
-          <div className="filter-options">
-            <span
-              className={`filter ${activeFilter === 'Valeur' ? 'active' : ''}`}
-              onClick={() => handleFilterChange('Valeur')}
+            <div
+              className={`tab ${activePage === 'Portefeuille' ? 'active' : ''}`}
+              onClick={() => setActivePage('Portefeuille')}
             >
-              Valeur
-            </span>
-            <span
-              className={`filter ${activeFilter === 'Depuis le début' ? 'active' : ''}`}
-              onClick={() => handleFilterChange('Depuis le début')}
-            >
-              Depuis le début
-            </span>
-            <span
-              className={`filter ${activeFilter === 'Aujourd\'hui' ? 'active' : ''}`}
-              onClick={() => handleFilterChange('Aujourd\'hui')}
-            >
-              Aujourd'hui
-            </span>
-          </div>
-        </div>
-
-        {/* Portfolio list */}
-        <div className="portfolio-list">
-          {loading && portfolioData.length === 0 ? (
-            <div className="loading-container">
-              <div className="loading-spinner">🔄</div>
-              <p>Chargement des données de marché...</p>
+              Portefeuille
             </div>
-          ) : (
-            portfolioData.map((item, index) => (
-              <a
-                key={index}
-                href={getYahooFinanceUrl(item.symbol)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="portfolio-item"
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <div className="item-left">
-                  <div className="color-indicator"></div>
-                  <div className="item-info">
-                    <div className="item-name">{item.name}</div>
-                    <div className="item-subtitle">{item.subtitle}</div>
-                    <div className="item-details">
-                      <span className="item-price">{item.price}</span>
-                      <span className="item-quantity">{item.quantityText}</span>
+            <div
+              className={`tab ${activePage === 'Ordres' ? 'active' : ''}`}
+              onClick={() => setActivePage('Ordres')}
+            >
+              Ordres
+            </div>
+            <div
+              className={`tab ${activePage === 'Test' ? 'active' : ''}`}
+              onClick={() => setActivePage('Test')}
+            >
+              🧪 Test
+            </div>
+          </div>
+        </div>
+
+        {/* Contenu conditionnel selon la page active */}
+        {activePage === 'Portefeuille' ? (
+          <>
+            {/* Filters */}
+            <div className="filters">
+              <div className="sort-icon">↕️</div>
+              <div className="filter-options">
+                <span
+                  className="filter active"
+                >
+                  Valeur
+                </span>
+                <span
+                  className={`filter ${activeFilter === 'Depuis le début' ? 'active' : ''}`}
+                  onClick={() => handleFilterChange('Depuis le début')}
+                >
+                  Depuis le début
+                </span>
+                <span
+                  className={`filter ${activeFilter === 'Aujourd\'hui' ? 'active' : ''}`}
+                  onClick={() => handleFilterChange('Aujourd\'hui')}
+                >
+                  Aujourd'hui
+                </span>
+              </div>
+            </div>
+
+            {/* Portfolio evolution chart for "Depuis le début" filter */}
+            {activeFilter === 'Depuis le début' && (
+              <PortfolioChart />
+            )}
+
+            {/* Portfolio list */}
+            <div className="portfolio-list">
+              {loading && portfolioData.length === 0 ? (
+                <div className="loading-container">
+                  <div className="loading-spinner">🔄</div>
+                  <p>Chargement des données de marché...</p>
+                </div>
+              ) : (
+                portfolioData.map((item, index) => (
+                  <div key={index}>
+                    <div
+                      className="portfolio-item"
+                      onClick={() => setSelectedETF(selectedETF === item.symbol ? null : item.symbol)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                    <div className="item-left">
+                      <div className="color-indicator"></div>
+                      <div className="item-info">
+                        <div className="item-name">{item.name}</div>
+                        <div className="item-subtitle">{item.subtitle}</div>
+                        <div className="item-details">
+                          <span className="item-price">{item.price}</span>
+                          <span className="item-quantity">{item.quantityText}</span>
+                        </div>
+                        <div className="purchase-info">
+                          {activeFilter === 'Aujourd\'hui' ? (
+                            <>
+                              <span className="purchase-price">{item.previousCloseText || 'Clôture précédente indisponible'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="purchase-price">{item.purchaseText}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="purchase-info">
-                      {activeFilter === 'Aujourd\'hui' ? (
+
+                    <div className="item-center landscape-only">
+                      <div className="quantity-display">
+                        <div className="quantity-number">{item.quantity}</div>
+                        <div className="quantity-label">unités</div>
+                      </div>
+                    </div>
+
+                    <div className="item-right">
+                      <div className="item-value">{item.value}</div>
+                      <div className="performance-container">
+                        <div className={`item-change ${
+                          activeFilter === 'Aujourd\'hui' ? (item.dailyGain >= 0 ? 'positive' : 'negative') :
+                          activeFilter === 'Depuis le début' ? (item.totalGainSincePurchase >= 0 ? 'positive' : 'negative') :
+                          (item.positive ? 'positive' : 'negative')
+                        }`}>
+                          {activeFilter === 'Aujourd\'hui' ? (item.dailyChangeText || item.change) :
+                           activeFilter === 'Depuis le début' ? (item.sinceBeginningChangeText || item.change) :
+                           item.change}
+                        </div>
+                        <div className={`item-percentage ${
+                          activeFilter === 'Aujourd\'hui' ? (item.dailyGain >= 0 ? 'positive' : 'negative') :
+                          activeFilter === 'Depuis le début' ? (item.totalGainSincePurchase >= 0 ? 'positive' : 'negative') :
+                          (item.positive ? 'positive' : 'negative')
+                        }`}>
+                          {activeFilter === 'Aujourd\'hui' ? (item.dailyPercentageText || item.percentage) :
+                           activeFilter === 'Depuis le début' ? (item.sinceBeginningPercentageText || item.percentage) :
+                           item.percentage}
+                        </div>
+                      </div>
+                      {activeFilter === 'Depuis le début' && (
                         <>
-                          <span className="purchase-price">{item.openText || 'Ouverture indisponible'}</span>
-                          <span className={`purchase-gain ${item.dailyGain >= 0 ? 'positive' : 'negative'}`}>
-                            {item.dailyGainText || 'Variation indisponible'}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="purchase-price">{item.purchaseText}</span>
-                          <span className={`purchase-gain ${item.totalGainSincePurchase >= 0 ? 'positive' : 'negative'}`}>
-                            {item.gainSincePurchaseText}
-                          </span>
+                          <div className="initial-total-right">{item.initialTotalText}</div>
+                          <div className="fees-disclaimer">{item.feesDisclaimer}</div>
                         </>
                       )}
                     </div>
-                  </div>
-                </div>
-
-                <div className="item-center landscape-only">
-                  <div className="quantity-display">
-                    <div className="quantity-number">{item.quantity}</div>
-                    <div className="quantity-label">unités</div>
-                  </div>
-                </div>
-
-                <div className="item-right">
-                  <div className="item-value">{item.value}</div>
-                  <div className="performance-container">
-                    <div className={`item-change ${item.positive ? 'positive' : 'negative'}`}>
-                      {item.change}
                     </div>
-                    <div className={`item-percentage ${item.positive ? 'positive' : 'negative'}`}>
-                      {item.percentage}
-                    </div>
+
+                    {/* Graphique affiché quand l'ETF est sélectionné */}
+                    {selectedETF === item.symbol && (
+                      <div className="chart-section">
+                        <StockChart symbol={item.symbol} etfName={item.name} />
+                        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                          <a
+                            href={getYahooFinanceUrl(item.symbol)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: '#007bff',
+                              textDecoration: 'none',
+                              fontSize: '12px'
+                            }}
+                          >
+                            📊 Voir sur Yahoo Finance
+                          </a>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </a>
-            ))
-          )}
-        </div>
+                ))
+              )}
+            </div>
+          </>
+        ) : activePage === 'Ordres' ? (
+          <OrdersPage />
+        ) : activePage === 'Test' ? (
+          <TestPage />
+        ) : (
+          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+            <p>Page en cours de développement</p>
+          </div>
+        )}
 
         {/* Bottom info */}
         <div className="bottom-info">

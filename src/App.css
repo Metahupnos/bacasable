@@ -67,7 +67,7 @@ body {
 
 .total-balance {
   font-size: 32px;
-  font-weight: 300;
+  font-weight: 700;
   margin-bottom: 5px;
 }
 
@@ -83,19 +83,21 @@ body {
 }
 
 .change-percentage {
-  background: rgba(255,255,255,0.2);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
+  color: white;
 }
 
 .change-percentage.negative {
   background: #FF6B6B;
+  color: white;
 }
 
 .change-percentage.positive {
   background: #51CF66;
+  color: white;
 }
 
 /* Navigation tabs */
@@ -153,15 +155,6 @@ body {
   font-weight: 600;
 }
 
-.filter.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #8B5FBF;
-}
 
 /* Portfolio list */
 .portfolio-list {
@@ -242,6 +235,31 @@ body {
   font-size: 10px;
   color: #666;
   font-style: italic;
+}
+
+.initial-total {
+  font-size: 10px;
+  color: #888;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.initial-total-right {
+  font-size: 10px;
+  color: #888;
+  font-weight: 500;
+  margin-top: 4px;
+  text-align: right;
+  padding-top: 2px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.fees-disclaimer {
+  font-size: 9px;
+  color: #aaa;
+  font-style: italic;
+  text-align: right;
+  margin-top: 1px;
 }
 
 .purchase-gain {
@@ -559,4 +577,374 @@ body {
   .item-value {
     font-size: 15px;
   }
+}
+
+/* Page Ordres */
+.orders-page {
+  flex: 1;
+  background: white;
+  padding: 20px;
+}
+
+.orders-header {
+  margin-bottom: 30px;
+}
+
+.orders-header h2 {
+  color: #333;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.orders-stats {
+  display: flex;
+  justify-content: space-between;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.transaction-date-group {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.date-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #8B5FBF 0%, #E94F7E 100%);
+  color: white;
+  padding: 15px 20px;
+}
+
+.date-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.date-count {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.transaction-item {
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 15px 20px;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.transaction-left {
+  flex: 1;
+  display: flex;
+  gap: 15px;
+}
+
+.transaction-type {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.type-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.type-badge.achat {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.type-badge.vente {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.transaction-time {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+}
+
+.transaction-instrument {
+  flex: 1;
+}
+
+.instrument-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.instrument-details {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.instrument-exchange {
+  font-size: 11px;
+  color: #999;
+}
+
+.transaction-right {
+  text-align: right;
+  min-width: 120px;
+}
+
+.total-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.fees-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.fees-breakdown span {
+  font-size: 10px;
+  color: #666;
+}
+
+.net-amount {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.net-amount.achat {
+  background: rgba(255, 107, 107, 0.1);
+  color: #FF6B6B;
+}
+
+.net-amount.vente {
+  background: rgba(81, 207, 102, 0.1);
+  color: #51CF66;
+}
+
+.transaction-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.bordereau {
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+}
+
+.total-fees {
+  font-size: 11px;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Responsive pour les ordres */
+@media (max-width: 600px) {
+  .orders-stats {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .stat-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .transaction-main {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .transaction-right {
+    align-self: flex-end;
+    text-align: right;
+  }
+
+  .transaction-footer {
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+  }
+}
+
+/* Styles pour le composant graphique */
+.stock-chart {
+  margin-top: 15px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.period-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.period-btn {
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  background: #f8f9fa;
+  color: #666;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.period-btn:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+.period-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.chart-container {
+  position: relative;
+  min-height: 200px;
+}
+
+.chart-wrapper {
+  height: 200px;
+  width: 100%;
+}
+
+.chart-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #666;
+}
+
+.chart-loading .loading-spinner {
+  font-size: 24px;
+  margin-bottom: 10px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.chart-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #dc3545;
+  font-size: 14px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Responsive pour les graphiques */
+@media (max-width: 768px) {
+  .stock-chart {
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .period-selector {
+    gap: 4px;
+  }
+
+  .period-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .chart-container {
+    min-height: 150px;
+  }
+
+  .chart-wrapper {
+    height: 150px;
+  }
+
+  .chart-loading,
+  .chart-error {
+    height: 150px;
+  }
+}
+
+/* Indicateur visuel pour les items cliquables */
+.portfolio-item:hover {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.chart-section {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 10px;
+  padding-top: 10px;
 }
