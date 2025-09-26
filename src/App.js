@@ -46,7 +46,7 @@ function App() {
     const interval = setInterval(loadPortfolioData, 30000);
 
     return () => clearInterval(interval);
-  }, [activeFilter]); // Se déclencher quand le filtre change
+  }, [activeFilter, loadPortfolioData]); // Se déclencher quand le filtre change
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('fr-FR', {

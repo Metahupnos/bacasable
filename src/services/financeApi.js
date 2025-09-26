@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 // Utilisation d'une API Yahoo Finance proxy qui évite le CORS
-const YAHOO_API_URL = 'https://yahoofinance-api.vercel.app';
 
 // Mapping des ETF avec les vrais symboles Yahoo Finance
 const ETF_SYMBOLS = {
