@@ -17,7 +17,7 @@ class FinanceService {
       // Utilisation de notre proxy local Node/Express ou Netlify Function
       const PROXY_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4000';
       const response = await axios.get(`${PROXY_BASE_URL}/api/finance/${symbol}`, {
-        timeout: 8000,
+        timeout: 15000,
         headers: {
           'Accept': 'application/json',
         }
