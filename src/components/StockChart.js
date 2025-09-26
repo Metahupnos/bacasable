@@ -85,9 +85,8 @@ function StockChart({ symbol, etfName }) {
 
       const priceData = validData.map(item => item.price);
 
-      // Calculer la performance relative (%)
+      // Utiliser les prix absolus directement
       const firstPrice = priceData[0];
-      const performanceData = priceData.map(price => ((price - firstPrice) / firstPrice) * 100);
 
       // Déterminer la couleur du graphique
       const lastPrice = priceData[priceData.length - 1];
@@ -98,8 +97,8 @@ function StockChart({ symbol, etfName }) {
         labels,
         datasets: [
           {
-            label: `${etfName} (%)`,
-            data: performanceData,
+            label: `${etfName} (EUR)`,
+            data: priceData,
             borderColor: color,
             backgroundColor: color + '20',
             fill: true,
@@ -141,7 +140,7 @@ function StockChart({ symbol, etfName }) {
         borderWidth: 1,
         callbacks: {
           label: function(context) {
-            return `Performance: ${context.parsed.y.toFixed(2)}%`;
+            return `Prix: ${context.parsed.y.toFixed(2)} EUR`;
           }
         }
       }
@@ -164,7 +163,7 @@ function StockChart({ symbol, etfName }) {
         },
         ticks: {
           callback: function(value) {
-            return value.toFixed(1) + '%';
+            return value.toFixed(2) + ' EUR';
           },
           color: '#666'
         }
