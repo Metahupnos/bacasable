@@ -15,8 +15,8 @@ const ETF_SYMBOLS = {
 class FinanceService {
   async getETFQuote(symbol) {
     try {
-      // Utilisation de notre proxy local Node/Express
-      const PROXY_BASE_URL = 'http://localhost:4000';
+      // Utilisation de notre proxy local Node/Express ou Netlify Function
+      const PROXY_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4000';
       const response = await axios.get(`${PROXY_BASE_URL}/api/finance/${symbol}`, {
         timeout: 8000,
         headers: {
