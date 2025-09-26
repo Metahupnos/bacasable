@@ -94,7 +94,7 @@ function StockChart({ symbol, etfName }) {
       const performanceValue = lastPrice - firstPrice;
       const performancePercent = ((lastPrice - firstPrice) / firstPrice) * 100;
       const isPositive = lastPrice >= firstPrice;
-      const color = isPositive ? '#51CF66' : '#FF6B6B';
+      const color = isPositive ? '#20B8E0' : '#008EB7';
 
       // Mettre à jour les données de performance
       setPeriodPerformance({
@@ -209,9 +209,9 @@ function StockChart({ symbol, etfName }) {
         <div className="period-performance" style={{
           padding: '10px 15px',
           marginBottom: '10px',
-          backgroundColor: periodPerformance.isPositive ? '#e8f5e8' : '#ffeaea',
+          backgroundColor: periodPerformance.isPositive ? '#e6f7ff' : '#e6f3ff',
           borderRadius: '8px',
-          border: `1px solid ${periodPerformance.isPositive ? '#51CF66' : '#FF6B6B'}`,
+          border: `1px solid ${periodPerformance.isPositive ? '#20B8E0' : '#008EB7'}`,
           textAlign: 'center'
         }}>
           <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
@@ -220,7 +220,7 @@ function StockChart({ symbol, etfName }) {
           <div style={{
             fontSize: '16px',
             fontWeight: 'bold',
-            color: periodPerformance.isPositive ? '#51CF66' : '#FF6B6B'
+            color: periodPerformance.isPositive ? '#20B8E0' : '#008EB7'
           }}>
             {periodPerformance.isPositive ? '+' : ''}{periodPerformance.value.toFixed(2)} EUR
             ({periodPerformance.isPositive ? '+' : ''}{periodPerformance.percent.toFixed(2)}%)

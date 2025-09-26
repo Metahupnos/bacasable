@@ -13,7 +13,7 @@ body {
   display: flex;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #008EB7 0%, #20B8E0 100%);
+  background: white;
 }
 
 .mobile-container {
@@ -28,7 +28,7 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #008EB7 0%, #20B8E0 100%);
+  background: #0F6CBD;
   color: white;
   padding: 10px 20px 20px;
 }
@@ -643,7 +643,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #008EB7 0%, #20B8E0 100%);
+  background: #0F6CBD;
   color: white;
   padding: 15px 20px;
 }

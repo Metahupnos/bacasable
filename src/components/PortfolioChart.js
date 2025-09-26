@@ -296,7 +296,7 @@ function PortfolioChart() {
 
       // Utiliser les valeurs absolutes du portefeuille
 
-      const color = isPositive ? '#51CF66' : '#FF6B6B';
+      const color = isPositive ? '#20B8E0' : '#008EB7';
 
       setChartData({
         labels,
