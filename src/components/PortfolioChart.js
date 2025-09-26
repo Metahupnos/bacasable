@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -44,7 +44,7 @@ function PortfolioChart() {
     { symbol: 'EQEU.DE', name: 'INVESCO EQQQ NASDAQ-100 (ACC)', quantity: 144, startDate: '2025-09-19', endDate: null, purchaseValue: 144 * 428.57049 } // 61714.15
   ];
 
-  const createPortfolioChart = async () => {
+  const createPortfolioChart = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -323,7 +323,7 @@ function PortfolioChart() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     createPortfolioChart();

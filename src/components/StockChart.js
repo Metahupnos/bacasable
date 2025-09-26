@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,7 +39,7 @@ function StockChart({ symbol, etfName }) {
     { key: '5y', label: '5A' }
   ];
 
-  const fetchHistoricalData = async (period) => {
+  const fetchHistoricalData = useCallback(async (period) => {
     setLoading(true);
     setError(null);
 
@@ -113,7 +113,7 @@ function StockChart({ symbol, etfName }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [symbol, etfName]);
 
   useEffect(() => {
     if (symbol) {

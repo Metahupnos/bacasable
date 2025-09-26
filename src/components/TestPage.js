@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import StockChart from './StockChart';
 
 function TestPage() {
@@ -21,7 +21,7 @@ function TestPage() {
   const testSymbol = 'CSPX.AS';
   const testName = 'ISH COR S&P500';
 
-  const fetchCurrentPortfolioValue = async () => {
+  const fetchCurrentPortfolioValue = useCallback(async () => {
     try {
       console.log('💰 Calcul valeur actuelle du portefeuille...');
 
@@ -91,9 +91,9 @@ function TestPage() {
     } catch (err) {
       console.error('Erreur calcul valeur actuelle:', err);
     }
-  };
+  }, []);
 
-  const fetchPortfolioComparison = async () => {
+  const fetchPortfolioComparison = useCallback(async () => {
     try {
       console.log('🧪 Comparaison portefeuille: Récupération des données historiques...');
 
@@ -154,9 +154,9 @@ function TestPage() {
     } catch (err) {
       console.error('Erreur comparaison portefeuille:', err);
     }
-  };
+  }, []);
 
-  const fetchTestData = async () => {
+  const fetchTestData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -201,7 +201,7 @@ function TestPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [testSymbol]);
 
   useEffect(() => {
     fetchTestData();
