@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Finance data files
+*.pdf
+
+# Finance proxy
+finance-proxy/node_modules/
+finance-proxy/package-lock.json
