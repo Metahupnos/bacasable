@@ -91,7 +91,7 @@ function TestPage() {
     } catch (err) {
       console.error('Erreur calcul valeur actuelle:', err);
     }
-  }, []);
+  }, [portfolioRealData]);
 
   const fetchPortfolioComparison = useCallback(async () => {
     try {
@@ -154,7 +154,7 @@ function TestPage() {
     } catch (err) {
       console.error('Erreur comparaison portefeuille:', err);
     }
-  }, []);
+  }, [portfolioRealData]);
 
   const fetchTestData = useCallback(async () => {
     setLoading(true);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,7 +30,7 @@ function PortfolioChart() {
 
   // Configuration complète du portefeuille avec gestion de la transition EQQQ.DE → EQEU.DE
   // IMPORTANT: purchaseValue = prix d'achat × quantité (SANS les frais)
-  const portfolioConfig = [
+  const portfolioConfig = useMemo(() => [
     // ETF conservés tout au long
     { symbol: 'CSPX.AS', name: 'IS CO S&P500 U.ETF USD', quantity: 354, startDate: '2025-08-29', endDate: null, purchaseValue: 354 * 594.966 }, // 210617.964
     { symbol: 'IWDA.AS', name: 'ISHAR.III PLC CORE MSCI WORLD', quantity: 1424, startDate: '2025-08-29', endDate: null, purchaseValue: 1424 * 105.4987218487395 }, // 150227.26
@@ -42,7 +42,7 @@ function PortfolioChart() {
 
     // ETF acheté le 19/09 (remplace EQQQ.DE)
     { symbol: 'EQEU.DE', name: 'INVESCO EQQQ NASDAQ-100 (ACC)', quantity: 144, startDate: '2025-09-19', endDate: null, purchaseValue: 144 * 428.57049 } // 61714.15
-  ];
+  ], []);
 
   const createPortfolioChart = useCallback(async () => {
     setLoading(true);
@@ -323,7 +323,7 @@ function PortfolioChart() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [portfolioConfig]);
 
   useEffect(() => {
     createPortfolioChart();
