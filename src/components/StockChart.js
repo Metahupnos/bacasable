@@ -341,7 +341,7 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <span style={{ color: '#888', fontSize: '11px' }}>
-              {etfDescription} Acheté à {purchasePrice ? purchasePrice.toFixed(2) : 'N/A'} EUR
+              {etfDescription?.short || etfDescription} Acheté à {purchasePrice ? purchasePrice.toFixed(2) : 'N/A'} EUR
             </span>
             <span style={{ color: '#888', fontSize: '11px' }}>
               {periodPerformance.firstPrice.toFixed(2)} → {periodPerformance.lastPrice.toFixed(2)}

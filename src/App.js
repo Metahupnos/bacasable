@@ -34,14 +34,44 @@ function App() {
     'EQEU.DE': 428.57049
   };
 
-  // Descriptifs des ETF
+  // Descriptifs détaillés des ETF
   const etfDescriptions = {
-    'CSPX.AS': 'ISH COR S&P500',
-    'IWDA.AS': 'ISH COR MSCI WORLD',
-    'EMIM.AS': 'ISH COR MSCI EM',
-    'SC0J.DE': 'INV MSCI WORLD',
-    'EQQQ.DE': 'INV NASDAQ-100',
-    'EQEU.DE': 'INV NASDAQ-100 ACC'
+    'CSPX.AS': {
+      short: 'ISH COR S&P500',
+      full: 'iShares Core S&P 500 UCITS ETF',
+      isin: 'IE00B5BMR087',
+      description: 'Suit l\'indice S&P 500, représentant les 500 principales entreprises américaines. Capitalisant.'
+    },
+    'IWDA.AS': {
+      short: 'ISH COR MSCI WORLD',
+      full: 'iShares Core MSCI World UCITS ETF',
+      isin: 'IE00B4L5Y983',
+      description: 'Suit l\'indice MSCI World, couvrant les grandes et moyennes capitalisations des pays développés. Capitalisant.'
+    },
+    'EMIM.AS': {
+      short: 'ISH COR MSCI EM',
+      full: 'iShares Core MSCI Emerging Markets IMI UCITS ETF',
+      isin: 'IE00BKM4GZ66',
+      description: 'Suit l\'indice MSCI Emerging Markets IMI, comprenant des sociétés de grande, moyenne et petite taille dans les pays émergents. Capitalisant.'
+    },
+    'SC0J.DE': {
+      short: 'INV MSCI WORLD',
+      full: 'Invesco MSCI World UCITS ETF',
+      isin: 'IE00B60SX394',
+      description: 'Suit l\'indice MSCI World, similaire à IWDA, avec réplication physique. Capitalisant.'
+    },
+    'EQQQ.DE': {
+      short: 'INV NASDAQ-100',
+      full: 'Invesco Nasdaq-100 UCITS ETF Dist',
+      isin: 'IE00BYVQ9F29',
+      description: 'Suit l\'indice Nasdaq-100, regroupant 100 grandes entreprises non financières cotées au Nasdaq, avec forte pondération technologique. Distribuant.'
+    },
+    'EQEU.DE': {
+      short: 'INV NASDAQ-100 ACC',
+      full: 'Invesco Nasdaq-100 UCITS ETF Acc',
+      isin: 'IE00BYVQ9F29',
+      description: 'Suit l\'indice Nasdaq-100, regroupant 100 grandes entreprises non financières cotées au Nasdaq, avec forte pondération technologique. Capitalisant.'
+    }
   };
 
   // Quantités d'unités par ETF
@@ -299,6 +329,21 @@ function App() {
                       <div className="item-info">
                         <div className="item-name">{item.name}</div>
                         <div className="item-subtitle">{item.subtitle}</div>
+                        {etfDescriptions[item.symbol] && (
+                          <div className="etf-description" style={{
+                            fontSize: '10px',
+                            color: '#888',
+                            marginTop: '2px',
+                            lineHeight: '1.2'
+                          }}>
+                            <div style={{ fontWeight: '500', marginBottom: '1px' }}>
+                              {etfDescriptions[item.symbol].full} ({etfDescriptions[item.symbol].isin})
+                            </div>
+                            <div>
+                              {etfDescriptions[item.symbol].description}
+                            </div>
+                          </div>
+                        )}
                         <div className="item-details">
                           <span className="item-price">{item.price}</span>
                           <span className="item-quantity">{item.quantityText}</span>
