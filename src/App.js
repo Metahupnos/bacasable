@@ -26,6 +26,7 @@ function App() {
   const [selectedETFs, setSelectedETFs] = useState([]);
   const [historiqueSelectedPeriod, setHistoriqueSelectedPeriod] = useState('inception');
   const [actionsSelectedPeriod, setActionsSelectedPeriod] = useState('1y');
+  const [stockPerformances, setStockPerformances] = useState([]);
 
   // Actions à suivre pour la page Actions
   const watchedStocks = [
@@ -33,37 +34,43 @@ function App() {
       symbol: 'NVDA',
       name: 'NVIDIA',
       description: 'Leader mondial des GPU, indispensables pour l\'IA et le calcul haute performance.',
-      category: 'IA/GPU'
+      category: 'IA/Leaders établis'
     },
     {
       symbol: 'MSFT',
       name: 'Microsoft',
       description: 'Cloud (Azure), partenaire OpenAI, intégration massive de l\'IA dans ses logiciels.',
-      category: 'Cloud/IA'
+      category: 'IA/Leaders établis'
     },
     {
       symbol: 'GOOGL',
       name: 'Alphabet / Google',
       description: 'IA (DeepMind, Gemini), publicité numérique, services cloud.',
-      category: 'IA/Cloud'
+      category: 'IA/Leaders établis'
     },
     {
       symbol: 'META',
       name: 'Meta Platforms',
       description: 'Développe LLaMA (IA open source), publicité optimisée par IA, réalité augmentée/virtuelle.',
-      category: 'IA/Social'
+      category: 'IA/Leaders établis'
+    },
+    {
+      symbol: 'AMZN',
+      name: 'Amazon',
+      description: 'AWS (cloud leader), IA générative, Alexa, services IA pour entreprises.',
+      category: 'IA/Leaders établis'
     },
     {
       symbol: 'PLTR',
       name: 'Palantir Technologies',
       description: 'Analyse de données massives, solutions IA pour gouvernements et entreprises.',
-      category: 'IA/Data'
+      category: 'IA/Mid-caps spécialisées'
     },
     {
       symbol: 'RMBS',
       name: 'Rambus',
       description: 'Spécialiste des mémoires et interfaces haute performance, rôle clé dans l\'accélération matérielle IA.',
-      category: 'Semi-conducteurs'
+      category: 'IA/Mid-caps spécialisées'
     },
     {
       symbol: 'INTC',
@@ -78,10 +85,58 @@ function App() {
       category: 'Semi-conducteurs'
     },
     {
+      symbol: 'AMD',
+      name: 'Advanced Micro Devices',
+      description: 'GPU pour IA (série MI300), processeurs concurrents d\'Intel et Nvidia.',
+      category: 'Semi-conducteurs'
+    },
+    {
+      symbol: 'ASML',
+      name: 'ASML Holding',
+      description: 'Lithographie EUV, technologie clé pour les puces avancées.',
+      category: 'Semi-conducteurs'
+    },
+    {
+      symbol: 'ARM',
+      name: 'Arm Holdings',
+      description: 'Architectures CPU pour smartphones, serveurs et IA embarquée.',
+      category: 'Semi-conducteurs'
+    },
+    {
+      symbol: 'STM',
+      name: 'STMicroelectronics',
+      description: 'Capteurs, microcontrôleurs, IA embarquée. Leader européen.',
+      category: 'Semi-conducteurs'
+    },
+    {
       symbol: 'ORCL',
       name: 'Oracle',
       description: 'Logiciels de gestion, bases de données, cloud avec intégration de l\'IA.',
-      category: 'Cloud/Base de données'
+      category: 'Cloud/Logiciels d\'entreprise'
+    },
+    {
+      symbol: 'CRM',
+      name: 'Salesforce',
+      description: 'CRM leader avec Einstein GPT, IA intégrée aux processus commerciaux.',
+      category: 'Cloud/Logiciels d\'entreprise'
+    },
+    {
+      symbol: 'NOW',
+      name: 'ServiceNow',
+      description: 'Workflows d\'entreprise automatisés avec IA pour IT et RH.',
+      category: 'Cloud/Logiciels d\'entreprise'
+    },
+    {
+      symbol: 'ADBE',
+      name: 'Adobe',
+      description: 'Creative Suite avec IA générative Firefly, marketing digital.',
+      category: 'Cloud/Logiciels d\'entreprise'
+    },
+    {
+      symbol: 'SAP',
+      name: 'SAP',
+      description: 'ERP global avec intégration IA pour processus d\'entreprise.',
+      category: 'Cloud/Logiciels d\'entreprise'
     },
     {
       symbol: 'BABA',
@@ -102,10 +157,64 @@ function App() {
       category: 'Consumer Tech'
     },
     {
+      symbol: 'AI',
+      name: 'C3.ai',
+      description: 'Plateforme d\'IA d\'entreprise pour applications industrielles et gouvernementales.',
+      category: 'IA/Mid-caps spécialisées'
+    },
+    {
+      symbol: 'SNOW',
+      name: 'Snowflake',
+      description: 'Plateforme cloud de données avec intégration IA pour l\'analyse et le machine learning.',
+      category: 'IA/Mid-caps spécialisées'
+    },
+    {
+      symbol: 'DDOG',
+      name: 'Datadog',
+      description: 'Monitoring et observabilité des applications avec intégration IA.',
+      category: 'IA/Mid-caps spécialisées'
+    },
+    {
+      symbol: 'MDB',
+      name: 'MongoDB',
+      description: 'Base de données NoSQL, solutions cloud et IA pour développeurs.',
+      category: 'IA/Mid-caps spécialisées'
+    },
+    {
+      symbol: 'ESTC',
+      name: 'Elastic',
+      description: 'Moteur de recherche et analytics avec capacités IA intégrées.',
+      category: 'IA/Mid-caps spécialisées'
+    },
+    {
       symbol: 'SOUN',
       name: 'SoundHound AI',
-      description: 'Spécialisé dans la reconnaissance vocale et les assistants vocaux basés sur l\'intelligence artificielle. Fournisseur de solutions IA conversationnelle pour l\'automobile, la restauration et d\'autres secteurs.',
-      category: 'IA/Vocale'
+      description: 'Spécialisé dans la reconnaissance vocale et les assistants vocaux basés sur l\'intelligence artificielle.',
+      category: 'IA/Small-caps'
+    },
+    {
+      symbol: 'BBAI',
+      name: 'BigBear.ai',
+      description: 'Solutions IA pour la défense, cybersécurité et secteurs critiques.',
+      category: 'IA/Small-caps'
+    },
+    {
+      symbol: 'INOD',
+      name: 'Innodata',
+      description: 'Services de données et IA, annotation de données pour l\'entraînement de modèles.',
+      category: 'IA/Small-caps'
+    },
+    {
+      symbol: 'PATH',
+      name: 'UiPath',
+      description: 'Automatisation robotique des processus (RPA) avec intégration IA.',
+      category: 'IA/Small-caps'
+    },
+    {
+      symbol: '^XAU',
+      name: 'Or (PHLX Gold/Silver Sector)',
+      description: 'Valeur refuge historique, utilisée comme protection contre l\'inflation et l\'instabilité financière.',
+      category: 'Métaux précieux'
     },
     {
       symbol: 'BTC-EUR',
@@ -292,6 +401,70 @@ function App() {
     return () => window.removeEventListener('etf-period-changed', handlePeriodChange);
   }, [activePage]);
 
+  // Fonction pour récupérer les performances de toutes les actions
+  const loadStockPerformances = useCallback(async (period) => {
+    try {
+      const performances = [];
+
+      for (const stock of watchedStocks) {
+        try {
+          // Utiliser Netlify Function en production ou proxy local en développement
+          const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
+          const apiPath = process.env.NODE_ENV === 'production' ? `/.netlify/functions/history/${stock.symbol}/${period}` : `/api/history/${stock.symbol}/${period}`;
+          const response = await fetch(`${baseUrl}${apiPath}`);
+
+          if (response.ok) {
+            const data = await response.json();
+            const result = data.chart?.result?.[0];
+
+            if (result) {
+              const timestamps = result.timestamp || [];
+              const prices = result.indicators?.quote?.[0]?.close || [];
+
+              // Filtrer les données valides
+              const validData = timestamps
+                .map((timestamp, index) => ({
+                  timestamp: timestamp * 1000,
+                  price: prices[index]
+                }))
+                .filter(item => item.price !== null && item.price !== undefined);
+
+              if (validData.length >= 2) {
+                const firstPrice = validData[0].price;
+                const lastPrice = validData[validData.length - 1].price;
+                const performance = ((lastPrice - firstPrice) / firstPrice) * 100;
+
+                performances.push({
+                  ...stock,
+                  performance: performance,
+                  firstPrice: firstPrice,
+                  lastPrice: lastPrice,
+                  isPositive: performance >= 0
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.warn(`Erreur pour ${stock.symbol}:`, error);
+        }
+      }
+
+      // Trier par performance décroissante
+      performances.sort((a, b) => b.performance - a.performance);
+      setStockPerformances(performances);
+
+    } catch (error) {
+      console.error('Erreur lors du chargement des performances:', error);
+    }
+  }, [watchedStocks]);
+
+  // Charger les performances quand la période Actions change
+  useEffect(() => {
+    if (activePage === 'Actions') {
+      loadStockPerformances(actionsSelectedPeriod);
+    }
+  }, [activePage, actionsSelectedPeriod, loadStockPerformances]);
+
   const formatTime = (date) => {
     return date.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
@@ -418,6 +591,7 @@ function App() {
                   { key: '3m', label: '3M' },
                   { key: '6m', label: '6M' },
                   { key: '1y', label: '1A' },
+                  { key: '2y', label: '2A' },
                   { key: '5y', label: '5A' },
                   { key: '10y', label: '10A' },
                   { key: 'inception', label: 'Depuis création' }
@@ -650,6 +824,7 @@ function App() {
                   { key: '3m', label: '3M' },
                   { key: '6m', label: '6M' },
                   { key: '1y', label: '1A' },
+                  { key: '2y', label: '2A' },
                   { key: '5y', label: '5A' },
                   { key: '10y', label: '10A' }
                 ].map(period => (
@@ -738,6 +913,76 @@ function App() {
                 </div>
               ))}
             </div>
+
+            {/* Liste des performances triées */}
+            {stockPerformances.length > 0 && (
+              <div style={{
+                background: '#fff',
+                borderRadius: '12px',
+                padding: '15px 20px',
+                margin: '15px 0',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                <h3 style={{
+                  margin: '0 0 15px 0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#333'
+                }}>
+                  Performances - {actionsSelectedPeriod === '1d' ? '1J' :
+                    actionsSelectedPeriod === '5d' ? '5J' :
+                    actionsSelectedPeriod === '10d' ? '10J' :
+                    actionsSelectedPeriod === '20d' ? '20J' :
+                    actionsSelectedPeriod === '1m' ? '1M' :
+                    actionsSelectedPeriod === '3m' ? '3M' :
+                    actionsSelectedPeriod === '6m' ? '6M' :
+                    actionsSelectedPeriod === '1y' ? '1A' :
+                    actionsSelectedPeriod === '2y' ? '2A' :
+                    actionsSelectedPeriod === '5y' ? '5A' :
+                    actionsSelectedPeriod === '10y' ? '10A' : actionsSelectedPeriod}
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gap: '8px'
+                }}>
+                  {stockPerformances.map((stock, index) => (
+                    <div key={stock.symbol} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 12px',
+                      background: index % 2 === 0 ? '#f8f9fa' : '#fff',
+                      borderRadius: '6px',
+                      fontSize: '13px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600', color: '#333' }}>
+                          {stock.symbol} - {stock.name}
+                        </div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: '#666',
+                          background: '#e6f3ff',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          display: 'inline-block',
+                          marginTop: '2px'
+                        }}>
+                          {stock.category}
+                        </div>
+                      </div>
+                      <div style={{
+                        fontWeight: 'bold',
+                        color: stock.isPositive ? '#28a745' : '#dc3545',
+                        textAlign: 'right'
+                      }}>
+                        {stock.isPositive ? '+' : ''}{stock.performance.toFixed(2)}%
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>

@@ -36,28 +36,30 @@ exports.handler = async (event, context) => {
 
     // Mapping des périodes pour Yahoo Finance
     const ranges = {
-      '1d': '2d',
+      '1d': '1d',
       '5d': '5d',
-      '10d': '10d',
-      '20d': '20d',
+      '10d': '1mo',
+      '20d': '1mo',
       '1m': '1mo',
       '3m': '3mo',
       '6m': '6mo',
       '1y': '1y',
+      '2y': '5y',
       '5y': '5y',
       '10y': '10y'
     };
 
     const intervals = {
       '1d': '5m',
-      '5d': '1d',
-      '10d': '1d',
-      '20d': '1d',
+      '5d': '15m',
+      '10d': '15m',
+      '20d': '15m',
       '1m': '1d',
       '3m': '1d',
       '6m': '1wk',
       '1y': '1wk',
-      '5y': '1mo',
+      '2y': '1wk',
+      '5y': '1wk',
       '10y': '1wk'
     };
 

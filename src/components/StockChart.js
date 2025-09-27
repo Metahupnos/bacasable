@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -45,6 +45,7 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [periodPerformance, setPeriodPerformance] = useState(null);
+  const validDataRef = useRef([]);
 
   // Fonction pour changer la période et la sauvegarder globalement
   const handlePeriodChange = (newPeriod) => {
@@ -81,6 +82,7 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
     { key: '3m', label: '3M' },
     { key: '6m', label: '6M' },
     { key: '1y', label: '1A' },
+    { key: '2y', label: '2A' },
     { key: '5y', label: '5A' },
     { key: '10y', label: '10A' },
     { key: 'inception', label: 'Depuis création' }
@@ -91,11 +93,17 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
     setError(null);
 
     try {
-      // Pour "inception", utiliser la période 1m mais on filtrera les données côté client
+      // Pour "inception", utiliser 1m et filtrer côté client
+      // Pour "10d" et "20d", utiliser directement l'API avec filtrage côté client
       // Pour "10y", utiliser directement "10y" comme Yahoo Finance le supporte
+      // Pour "2y", utiliser 5y et tronquer aux 2 dernières années
       let apiPeriod;
       if (period === 'inception') {
         apiPeriod = '1m';
+      } else if (period === '10d' || period === '20d') {
+        apiPeriod = period; // Utiliser directement 10d ou 20d avec notre configuration
+      } else if (period === '2y') {
+        apiPeriod = '5y'; // Utiliser 5y et tronquer côté client
       } else if (period === '10y') {
         apiPeriod = '10y'; // Yahoo Finance supporte directement 10y
       } else {
@@ -135,6 +143,31 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
         validData = validData.filter(item => item.timestamp >= inceptionDate);
       }
 
+      // Pour "10d" et "20d", tronquer les données pour garder exactement 10 ou 20 jours
+      if (period === '10d') {
+        // Calculer la date il y a 10 jours
+        const tenDaysAgo = new Date();
+        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+        const tenDaysAgoTime = tenDaysAgo.getTime();
+        validData = validData.filter(item => item.timestamp >= tenDaysAgoTime);
+      }
+
+      if (period === '20d') {
+        // Calculer la date il y a 20 jours
+        const twentyDaysAgo = new Date();
+        twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+        const twentyDaysAgoTime = twentyDaysAgo.getTime();
+        validData = validData.filter(item => item.timestamp >= twentyDaysAgoTime);
+      }
+
+      // Pour "2y", filtrer pour garder seulement les 2 dernières années
+      if (period === '2y') {
+        const twoYearsAgo = new Date();
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+        const twoYearsAgoTime = twoYearsAgo.getTime();
+        validData = validData.filter(item => item.timestamp >= twoYearsAgoTime);
+      }
+
       // Pour "10y", filtrer pour garder seulement les 10 dernières années
       if (period === '10y') {
         const tenYearsAgo = new Date();
@@ -149,7 +182,7 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
         // En mode "Aujourd'hui", toujours utiliser le format heure/minute
         if (mode === 'Aujourd\'hui' || period === '1d') {
           return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        } else if (['5d', '1m', 'inception'].includes(period)) {
+        } else if (['5d', '10d', '20d', '1m', 'inception'].includes(period)) {
           return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
         } else {
           return date.toLocaleDateString('fr-FR', { month: '2-digit', year: '2-digit' });
@@ -169,6 +202,9 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
       const performancePercent = ((lastPrice - firstPrice) / firstPrice) * 100;
       const isPositive = lastPrice >= firstPrice;
       const color = isPositive ? '#20B8E0' : '#008EB7';
+
+      // Stocker validData dans le ref pour l'accès dans les callbacks
+      validDataRef.current = validData;
 
       // Mettre à jour les données de performance
       setPeriodPerformance({
@@ -243,22 +279,36 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
             return prixText;
           },
           label: function(context) {
-            // Date en dessous
-            const label = context.label; // Format du graphique
+            // Récupérer la date originale depuis les données
+            const dataIndex = context.dataIndex;
+            const originalTimestamp = validDataRef.current[dataIndex]?.timestamp;
             let dateValue;
 
-            // Gérer les différents formats de date selon la période
-            if (label.includes(':')) {
-              // Format heure pour 1d
-              const currentDate = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-              dateValue = `${currentDate} ${label}`;
-            } else if (label.includes('/') && label.length <= 5) {
-              // Format dd/mm pour 5d, 1m
-              const currentYear = new Date().getFullYear();
-              dateValue = `${label}/${currentYear}`;
+            if (originalTimestamp) {
+              const originalDate = new Date(originalTimestamp);
+
+              // Gérer les différents formats de date selon la période
+              if (mode === 'Aujourd\'hui' || selectedPeriod === '1d') {
+                // Format complet avec heure pour 1d
+                dateValue = originalDate.toLocaleDateString('fr-FR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                }) + ' ' + originalDate.toLocaleTimeString('fr-FR', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+              } else {
+                // Format dd/mm/yyyy pour toutes les autres périodes
+                dateValue = originalDate.toLocaleDateString('fr-FR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                });
+              }
             } else {
-              // Format mm/yy pour périodes plus longues
-              dateValue = label;
+              // Fallback vers le label du graphique
+              dateValue = context.label;
             }
 
             // Performance supprimée pour débugger
