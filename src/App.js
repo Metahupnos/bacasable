@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './App.css';
 import financeService from './services/financeApi';
 import OrdersPage from './components/OrdersPage';
@@ -110,14 +110,14 @@ function App() {
   ];
 
   // Configuration des prix d'achat pour le mode "Depuis le début"
-  const purchasePrices = {
+  const purchasePrices = useMemo(() => ({
     'CSPX.AS': 594.966,
     'IWDA.AS': 105.4987218487395,
     'EMIM.AS': 34.979,
     'SC0J.DE': 113.21626,
     'EQQQ.DE': 496.2,
     'EQEU.DE': 428.57049
-  };
+  }), []);
 
   // Dates d'achat des ETF
   const purchaseDates = {
@@ -176,14 +176,14 @@ function App() {
   };
 
   // Quantités d'unités par ETF
-  const etfQuantities = {
+  const etfQuantities = useMemo(() => ({
     'CSPX.AS': 354,
     'IWDA.AS': 1424,
     'EMIM.AS': 2567,
     'SC0J.DE': 796,
     'EQQQ.DE': 121,
     'EQEU.DE': 144
-  };
+  }), []);
 
   const loadPortfolioData = useCallback(async () => {
     try {
