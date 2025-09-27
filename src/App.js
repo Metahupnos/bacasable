@@ -253,7 +253,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [etfQuantities, purchasePrices]);
 
   useEffect(() => {
     // Initialiser la période par défaut dans localStorage
