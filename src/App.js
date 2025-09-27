@@ -8,7 +8,7 @@ import PortfolioChart from './components/PortfolioChart';
 function App() {
   const [portfolioData, setPortfolioData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('Aujourd\'hui');
+  const [activeFilter, setActiveFilter] = useState('Depuis le début');
   const [activePage, setActivePage] = useState('Portefeuille');
   const [totalBalance, setTotalBalance] = useState({
     total: '615.232,42',
@@ -16,8 +16,43 @@ function App() {
     changePercentage: '-0,18',
     positive: false
   });
+  const [portfolioPerformance, setPortfolioPerformance] = useState({
+    sinceInception: { change: '+12.569,84', changePercentage: '+2,09', positive: true },
+    intraday: { change: '-1.108,05', changePercentage: '-0,18', positive: false }
+  });
   const [lastUpdate, setLastUpdate] = useState(new Date());
-  const [selectedETF, setSelectedETF] = useState(null);
+  const [selectedETFs, setSelectedETFs] = useState([]);
+  const [historiqueSelectedPeriod, setHistoriqueSelectedPeriod] = useState('inception');
+
+  // Configuration des prix d'achat pour le mode "Depuis le début"
+  const purchasePrices = {
+    'CSPX.AS': 594.966,
+    'IWDA.AS': 105.4987218487395,
+    'EMIM.AS': 34.979,
+    'SC0J.DE': 113.21626,
+    'EQQQ.DE': 496.2,
+    'EQEU.DE': 428.57049
+  };
+
+  // Descriptifs des ETF
+  const etfDescriptions = {
+    'CSPX.AS': 'ISH COR S&P500',
+    'IWDA.AS': 'ISH COR MSCI WORLD',
+    'EMIM.AS': 'ISH COR MSCI EM',
+    'SC0J.DE': 'INV MSCI WORLD',
+    'EQQQ.DE': 'INV NASDAQ-100',
+    'EQEU.DE': 'INV NASDAQ-100 ACC'
+  };
+
+  // Quantités d'unités par ETF
+  const etfQuantities = {
+    'CSPX.AS': 354,
+    'IWDA.AS': 1424,
+    'EMIM.AS': 2567,
+    'SC0J.DE': 796,
+    'EQQQ.DE': 121,
+    'EQEU.DE': 144
+  };
 
   const loadPortfolioData = useCallback(async () => {
     try {
@@ -25,16 +60,27 @@ function App() {
       const data = await financeService.getAllPortfolioData();
       setPortfolioData(data);
 
-      // Calculer le total selon le filtre actif
-      let balance;
-      if (activeFilter === 'Depuis le début') {
-        balance = financeService.calculateSinceInception(data);
-      } else if (activeFilter === 'Aujourd\'hui') {
-        balance = financeService.calculateTodayBalance(data);
-      } else {
-        balance = financeService.calculateTotalBalance(data);
-      }
-      setTotalBalance(balance);
+      // Calculer les performances pour l'en-tête
+      const sinceInceptionBalance = financeService.calculateSinceInception(data);
+      const todayBalance = financeService.calculateTodayBalance(data);
+
+      // Mettre à jour les performances du portefeuille
+      setPortfolioPerformance({
+        sinceInception: {
+          change: sinceInceptionBalance.change,
+          changePercentage: sinceInceptionBalance.changePercentage,
+          positive: sinceInceptionBalance.positive
+        },
+        intraday: {
+          change: todayBalance.change,
+          changePercentage: todayBalance.changePercentage,
+          positive: todayBalance.positive
+        }
+      });
+
+      // Le total balance reste le total actuel
+      const totalBalance = financeService.calculateTotalBalance(data);
+      setTotalBalance(totalBalance);
 
       setLastUpdate(new Date());
     } catch (error) {
@@ -42,9 +88,18 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter]);
+  }, []);
 
   useEffect(() => {
+    // Initialiser la période par défaut dans localStorage
+    try {
+      if (!localStorage.getItem('etf-chart-period')) {
+        localStorage.setItem('etf-chart-period', 'inception');
+      }
+    } catch (e) {
+      console.warn('Impossible d\'initialiser la période par défaut:', e);
+    }
+
     loadPortfolioData();
 
     // Actualiser les données toutes les 30 secondes pour éviter le rate limiting
@@ -52,6 +107,18 @@ function App() {
 
     return () => clearInterval(interval);
   }, [loadPortfolioData]); // loadPortfolioData est stable grâce à useCallback
+
+  // Écouter les changements de période depuis le portefeuille virtuel en mode Portefeuille
+  useEffect(() => {
+    const handlePeriodChange = (event) => {
+      if (activePage === 'Portefeuille') {
+        setHistoriqueSelectedPeriod(event.detail);
+      }
+    };
+
+    window.addEventListener('etf-period-changed', handlePeriodChange);
+    return () => window.removeEventListener('etf-period-changed', handlePeriodChange);
+  }, [activePage]);
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('fr-FR', {
@@ -66,7 +133,40 @@ function App() {
 
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
+
+    // Si on sélectionne "Aujourd'hui", forcer la période 1J pour synchroniser tous les graphiques
+    if (filter === 'Aujourd\'hui') {
+      try {
+        localStorage.setItem('etf-chart-period', '1d');
+        window.dispatchEvent(new CustomEvent('etf-period-changed', { detail: '1d' }));
+      } catch (e) {
+        console.warn('Impossible de sauvegarder la période:', e);
+      }
+    }
+
     // loadPortfolioData sera appelé automatiquement par useEffect
+  };
+
+  const toggleETFChart = (symbol) => {
+    setSelectedETFs(prev => {
+      if (prev.includes(symbol)) {
+        // Fermer le graphique s'il est déjà ouvert
+        return prev.filter(etf => etf !== symbol);
+      } else {
+        // Ouvrir le graphique
+        return [...prev, symbol];
+      }
+    });
+  };
+
+  const toggleAllCharts = () => {
+    if (selectedETFs.length === portfolioData.length) {
+      // Tous les graphiques sont ouverts, les fermer tous
+      setSelectedETFs([]);
+    } else {
+      // Ouvrir tous les graphiques
+      setSelectedETFs(portfolioData.map(item => item.symbol));
+    }
   };
   return (
     <div className="App">
@@ -88,12 +188,28 @@ function App() {
             <div className="balance-info">
               <h1 className="total-balance">{totalBalance.total} EUR</h1>
               <div className="balance-change">
-                <span className="change-amount">
-                  {totalBalance.positive ? '+' : ''}{totalBalance.change} EUR
-                </span>
-                <span className={`change-percentage ${totalBalance.positive ? 'positive' : 'negative'}`}>
-                  {totalBalance.positive ? '+' : ''}{totalBalance.changePercentage}%
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {/* Performance depuis le début */}
+                  <div style={{ display: 'flex', gap: '8px', fontSize: '12px' }}>
+                    <span style={{ color: '#333', fontWeight: '500' }}>Depuis création:</span>
+                    <span className="change-amount" style={{ fontSize: '12px' }}>
+                      {portfolioPerformance.sinceInception.change} EUR
+                    </span>
+                    <span className={`change-percentage ${portfolioPerformance.sinceInception.positive ? 'positive' : 'negative'}`} style={{ fontSize: '12px' }}>
+                      {portfolioPerformance.sinceInception.changePercentage}%
+                    </span>
+                  </div>
+                  {/* Performance intraday */}
+                  <div style={{ display: 'flex', gap: '8px', fontSize: '12px' }}>
+                    <span style={{ color: '#333', fontWeight: '500' }}>Aujourd'hui:</span>
+                    <span className="change-amount" style={{ fontSize: '12px' }}>
+                      {portfolioPerformance.intraday.change} EUR
+                    </span>
+                    <span className={`change-percentage ${portfolioPerformance.intraday.positive ? 'positive' : 'negative'}`} style={{ fontSize: '12px' }}>
+                      {portfolioPerformance.intraday.changePercentage}%
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="mail-icon">✉️</div>
@@ -103,7 +219,10 @@ function App() {
           <div className="nav-tabs">
             <div
               className={`tab ${activePage === 'Portefeuille' ? 'active' : ''}`}
-              onClick={() => setActivePage('Portefeuille')}
+              onClick={() => {
+                setActivePage('Portefeuille');
+                setActiveFilter('Historique');
+              }}
             >
               Portefeuille
             </div>
@@ -119,33 +238,65 @@ function App() {
         {/* Contenu conditionnel selon la page active */}
         {activePage === 'Portefeuille' ? (
           <>
-            {/* Filters */}
-            <div className="filters">
-              <div className="sort-icon">↕️</div>
-              <div className="filter-options">
-                <span
-                  className="filter active"
-                >
-                  Valeur
-                </span>
-                <span
-                  className={`filter ${activeFilter === 'Depuis le début' ? 'active' : ''}`}
-                  onClick={() => handleFilterChange('Depuis le début')}
-                >
-                  Depuis le début
-                </span>
-                <span
-                  className={`filter ${activeFilter === 'Aujourd\'hui' ? 'active' : ''}`}
-                  onClick={() => handleFilterChange('Aujourd\'hui')}
-                >
-                  Aujourd'hui
-                </span>
+            {/* Sélecteurs de période toujours visibles - au-dessus de tout */}
+            <div style={{
+              background: '#fff',
+              borderRadius: '12px',
+              padding: '15px 20px',
+              margin: '15px 0',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{
+                display: 'flex',
+                gap: '5px',
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+              }}>
+                {[
+                  { key: '1d', label: '1J' },
+                  { key: '5d', label: '5J' },
+                  { key: '1m', label: '1M' },
+                  { key: '3m', label: '3M' },
+                  { key: '6m', label: '6M' },
+                  { key: '1y', label: '1A' },
+                  { key: '5y', label: '5A' },
+                  { key: '10y', label: '10A' },
+                  { key: 'inception', label: 'Depuis création' }
+                ].map(period => (
+                  <button
+                    key={period.key}
+                    onClick={() => {
+                      setHistoriqueSelectedPeriod(period.key);
+                      try {
+                        localStorage.setItem('etf-chart-period', period.key);
+                        window.dispatchEvent(new CustomEvent('etf-period-changed', { detail: period.key }));
+                      } catch (e) {
+                        console.warn('Impossible de sauvegarder la période:', e);
+                      }
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      border: historiqueSelectedPeriod === period.key ? '2px solid #008EB7' : '1px solid #ddd',
+                      borderRadius: '15px',
+                      background: historiqueSelectedPeriod === period.key ? '#008EB7' : '#fff',
+                      color: historiqueSelectedPeriod === period.key ? '#fff' : '#666',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {period.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Portfolio evolution chart for "Depuis le début" filter */}
-            {activeFilter === 'Depuis le début' && (
-              <PortfolioChart />
+            {/* En mode Portefeuille, afficher le graphique "Depuis le début" (fixe) */}
+            <PortfolioChart key="portefeuille-depuis-debut" filter="Depuis le début" />
+
+            {/* Afficher le graphique virtuel en plus pour les autres périodes (masqué pour inception) */}
+            {historiqueSelectedPeriod !== 'inception' && (
+              <PortfolioChart filter="Historique" />
             )}
 
             {/* Portfolio list */}
@@ -158,9 +309,11 @@ function App() {
               ) : (
                 portfolioData.map((item, index) => (
                   <div key={index}>
+                    {/* Informations ETF masquées en mode Historique */}
+                    {activePage !== 'Historique' && (
                     <div
                       className="portfolio-item"
-                      onClick={() => setSelectedETF(selectedETF === item.symbol ? null : item.symbol)}
+                      onClick={() => toggleETFChart(item.symbol)}
                       style={{ cursor: 'pointer' }}
                     >
                     <div className="item-left">
@@ -223,11 +376,19 @@ function App() {
                       )}
                     </div>
                     </div>
+                    )}
 
-                    {/* Graphique affiché quand l'ETF est sélectionné */}
-                    {selectedETF === item.symbol && (
+                    {/* Graphique affiché quand l'ETF est sélectionné ou en mode Portefeuille */}
+                    {(selectedETFs.includes(item.symbol) || activePage === 'Portefeuille') && (
                       <div className="chart-section">
-                        <StockChart symbol={item.symbol} etfName={item.name} />
+                        <StockChart
+                          symbol={item.symbol}
+                          etfName={item.name}
+                          mode={activePage === 'Portefeuille' ? 'Historique' : activePage}
+                          purchasePrice={purchasePrices[item.symbol]}
+                          etfDescription={etfDescriptions[item.symbol]}
+                          etfQuantity={etfQuantities[item.symbol]}
+                        />
                         <div style={{ textAlign: 'center', marginTop: '10px' }}>
                           <a
                             href={getYahooFinanceUrl(item.symbol)}

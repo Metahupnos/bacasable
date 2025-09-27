@@ -42,7 +42,8 @@ exports.handler = async (event, context) => {
       '3m': '3mo',
       '6m': '6mo',
       '1y': '1y',
-      '5y': '5y'
+      '5y': '5y',
+      '10y': '10y'
     };
 
     const intervals = {
@@ -52,7 +53,8 @@ exports.handler = async (event, context) => {
       '3m': '1d',
       '6m': '1wk',
       '1y': '1wk',
-      '5y': '1mo'
+      '5y': '1mo',
+      '10y': '1wk'
     };
 
     const range = ranges[period] || '1mo';

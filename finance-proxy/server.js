@@ -110,7 +110,8 @@ app.get('/api/history/:symbol/:period', async (req, res) => {
       '3m': { range: '3mo', interval: '1d' },
       '6m': { range: '6mo', interval: '1d' },
       '1y': { range: '1y', interval: '1d' },
-      '5y': { range: '5y', interval: '1wk' }
+      '5y': { range: '5y', interval: '1wk' },
+      '10y': { range: '10y', interval: '1wk' }
     };
 
     const config = periodMap[period] || { range: '1mo', interval: '1d' };

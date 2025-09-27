@@ -426,17 +426,90 @@ body {
 /* Responsive design */
 
 /* Mode paysage sur mobile et tablettes */
-@media screen and (orientation: landscape) and (min-width: 568px) {
+@media screen and (orientation: landscape) and (min-width: 568px) and (max-width: 768px) {
   .mobile-container {
     max-width: 100%;
+    margin: 0;
   }
 
   .landscape-only {
     display: block !important;
   }
 
+  /* Header optimisé pour le paysage */
+  .header {
+    padding: 5px 15px 10px;
+  }
+
+  .status-bar {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .balance-section {
+    margin-bottom: 15px;
+  }
+
+  .total-balance {
+    font-size: 24px;
+  }
+
+  .balance-change {
+    gap: 8px;
+  }
+
+  .change-amount {
+    font-size: 14px;
+  }
+
+  .change-percentage {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+
+  /* Navigation compacte */
+  .nav-tabs {
+    margin-top: 8px;
+  }
+
+  .tab {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  /* Filters compacts */
+  .filters {
+    padding: 10px 15px;
+    gap: 10px;
+  }
+
+  /* Portfolio optimisé */
+  .portfolio-list {
+    padding: 0 15px;
+  }
+
   .portfolio-item {
-    padding: 15px 0;
+    padding: 12px 0;
+    gap: 20px;
+  }
+
+  .item-left {
+    flex: 2.5;
+    gap: 12px;
+  }
+
+  .color-indicator {
+    height: 50px;
+  }
+
+  .item-name {
+    font-size: 15px;
+    margin-bottom: 3px;
+  }
+
+  .item-subtitle {
+    font-size: 13px;
+    margin-bottom: 4px;
   }
 
   .item-details {
@@ -444,21 +517,116 @@ body {
     gap: 8px;
   }
 
+  .item-price {
+    font-size: 12px;
+  }
+
   .item-quantity {
     display: none; /* Cachée car affichée dans la colonne centrale */
   }
 
-  .header {
-    padding: 8px 20px 15px;
+  .item-center {
+    display: flex !important;
+    flex: 0.8;
+    margin: 0 8px;
   }
 
-  .total-balance {
-    font-size: 28px;
+  .quantity-display {
+    padding: 6px 10px;
+    min-width: 50px;
   }
 
-  .tab {
-    padding: 8px 16px;
+  .quantity-number {
+    font-size: 14px;
+  }
+
+  .quantity-label {
+    font-size: 8px;
+  }
+
+  .item-right {
+    flex: 1.5;
+    text-align: right;
+  }
+
+  .item-value {
     font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .item-change {
+    font-size: 12px;
+  }
+
+  .item-percentage {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  /* Purchase info compacte */
+  .purchase-info {
+    gap: 1px;
+    margin-top: 3px;
+    padding-top: 3px;
+  }
+
+  .purchase-price {
+    font-size: 9px;
+  }
+
+  .initial-total {
+    font-size: 9px;
+  }
+
+  .initial-total-right {
+    font-size: 9px;
+    margin-top: 3px;
+  }
+
+  .fees-disclaimer {
+    font-size: 8px;
+  }
+
+  .purchase-gain {
+    font-size: 9px;
+  }
+
+  /* Bottom navigation compacte */
+  .bottom-nav {
+    padding: 8px 0;
+  }
+
+  .nav-icon {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .nav-item span {
+    font-size: 9px;
+  }
+
+  /* Graphiques optimisés */
+  .stock-chart {
+    margin-top: 8px;
+    padding: 8px;
+  }
+
+  .period-selector {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .period-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .chart-wrapper {
+    height: 140px;
+  }
+
+  .chart-container {
+    min-height: 140px;
   }
 }
 
