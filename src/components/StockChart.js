@@ -201,7 +201,7 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
     } finally {
       setLoading(false);
     }
-  }, [symbol, etfName, mode, purchasePrice, etfDescription, etfQuantity]);
+  }, [symbol, etfName, mode]);
 
   useEffect(() => {
     if (symbol) {
@@ -258,7 +258,6 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
             }
 
             // Performance supprimée pour débugger
-            const currentPrice = context.parsed.y;
             let performanceText = '';
 
             const result = [dateValue];

@@ -131,21 +131,7 @@ function App() {
     return `https://finance.yahoo.com/quote/${symbol}`;
   };
 
-  const handleFilterChange = (filter) => {
-    setActiveFilter(filter);
-
-    // Si on sélectionne "Aujourd'hui", forcer la période 1J pour synchroniser tous les graphiques
-    if (filter === 'Aujourd\'hui') {
-      try {
-        localStorage.setItem('etf-chart-period', '1d');
-        window.dispatchEvent(new CustomEvent('etf-period-changed', { detail: '1d' }));
-      } catch (e) {
-        console.warn('Impossible de sauvegarder la période:', e);
-      }
-    }
-
-    // loadPortfolioData sera appelé automatiquement par useEffect
-  };
+  // Fonction supprimée car non utilisée
 
   const toggleETFChart = (symbol) => {
     setSelectedETFs(prev => {
@@ -159,15 +145,7 @@ function App() {
     });
   };
 
-  const toggleAllCharts = () => {
-    if (selectedETFs.length === portfolioData.length) {
-      // Tous les graphiques sont ouverts, les fermer tous
-      setSelectedETFs([]);
-    } else {
-      // Ouvrir tous les graphiques
-      setSelectedETFs(portfolioData.map(item => item.symbol));
-    }
-  };
+  // Fonction supprimée car non utilisée
   return (
     <div className="App">
       <div className="mobile-container">
