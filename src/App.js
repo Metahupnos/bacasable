@@ -34,43 +34,59 @@ function App() {
     'EQEU.DE': 428.57049
   };
 
+  // Dates d'achat des ETF
+  const purchaseDates = {
+    'CSPX.AS': '29/08/2025',
+    'IWDA.AS': '29/08/2025',
+    'EMIM.AS': '29/08/2025',
+    'SC0J.DE': '29/08/2025',
+    'EQQQ.DE': '29/08/2025',
+    'EQEU.DE': '19/09/2025'
+  };
+
   // Descriptifs détaillés des ETF
   const etfDescriptions = {
     'CSPX.AS': {
       short: 'ISH COR S&P500',
       full: 'iShares Core S&P 500 UCITS ETF',
       isin: 'IE00B5BMR087',
-      description: 'Suit l\'indice S&P 500, représentant les 500 principales entreprises américaines. Capitalisant.'
+      description: 'Suit l\'indice S&P 500, représentant les 500 principales entreprises américaines. Capitalisant.',
+      region: 'US'
     },
     'IWDA.AS': {
       short: 'ISH COR MSCI WORLD',
       full: 'iShares Core MSCI World UCITS ETF',
       isin: 'IE00B4L5Y983',
-      description: 'Suit l\'indice MSCI World, couvrant les grandes et moyennes capitalisations des pays développés. Capitalisant.'
+      description: 'Suit l\'indice MSCI World, couvrant les grandes et moyennes capitalisations des pays développés. Capitalisant.',
+      region: 'WORLD'
     },
     'EMIM.AS': {
       short: 'ISH COR MSCI EM',
       full: 'iShares Core MSCI Emerging Markets IMI UCITS ETF',
       isin: 'IE00BKM4GZ66',
-      description: 'Suit l\'indice MSCI Emerging Markets IMI, comprenant des sociétés de grande, moyenne et petite taille dans les pays émergents. Capitalisant.'
+      description: 'Suit l\'indice MSCI Emerging Markets IMI, comprenant des sociétés de grande, moyenne et petite taille dans les pays émergents. Capitalisant.',
+      region: 'EMERGENTS'
     },
     'SC0J.DE': {
       short: 'INV MSCI WORLD',
       full: 'Invesco MSCI World UCITS ETF',
       isin: 'IE00B60SX394',
-      description: 'Suit l\'indice MSCI World, similaire à IWDA, avec réplication physique. Capitalisant.'
+      description: 'Suit l\'indice MSCI World, similaire à IWDA, avec réplication physique. Capitalisant.',
+      region: 'WORLD'
     },
     'EQQQ.DE': {
       short: 'INV NASDAQ-100',
       full: 'Invesco Nasdaq-100 UCITS ETF Dist',
       isin: 'IE00BYVQ9F29',
-      description: 'Suit l\'indice Nasdaq-100, regroupant 100 grandes entreprises non financières cotées au Nasdaq, avec forte pondération technologique. Distribuant.'
+      description: 'Suit l\'indice Nasdaq-100, regroupant 100 grandes entreprises non financières cotées au Nasdaq, avec forte pondération technologique. Distribuant.',
+      region: 'US'
     },
     'EQEU.DE': {
       short: 'INV NASDAQ-100 ACC',
       full: 'Invesco Nasdaq-100 UCITS ETF Acc',
       isin: 'IE00BYVQ9F29',
-      description: 'Suit l\'indice Nasdaq-100, regroupant 100 grandes entreprises non financières cotées au Nasdaq, avec forte pondération technologique. Capitalisant.'
+      description: 'Suit l\'indice Nasdaq-100, regroupant 100 grandes entreprises non financières cotées au Nasdaq, avec forte pondération technologique. Capitalisant.',
+      region: 'US'
     }
   };
 
@@ -88,7 +104,24 @@ function App() {
     try {
       setLoading(true);
       const data = await financeService.getAllPortfolioData();
-      setPortfolioData(data);
+
+      // Calculer le poids de chaque ETF par rapport au portefeuille total
+      const totalPortfolioValue = data.reduce((sum, item) => {
+        // Extraire la valeur numérique en supprimant les espaces et en remplaçant la virgule par un point
+        const numericValue = parseFloat(item.value.replace(/\s/g, '').replace(',', '.'));
+        return sum + numericValue;
+      }, 0);
+
+      const dataWithWeights = data.map(item => {
+        const numericValue = parseFloat(item.value.replace(/\s/g, '').replace(',', '.'));
+        const weight = ((numericValue / totalPortfolioValue) * 100).toFixed(1);
+        return {
+          ...item,
+          portfolioWeight: weight
+        };
+      });
+
+      setPortfolioData(dataWithWeights);
 
       // Calculer les performances pour l'en-tête
       const sinceInceptionBalance = financeService.calculateSinceInception(data);
@@ -327,13 +360,16 @@ function App() {
                     <div className="item-left">
                       <div className="color-indicator"></div>
                       <div className="item-info">
-                        <div className="item-name">{item.name}</div>
+                        <div className="item-name">
+                          {item.name} <span style={{ color: '#666' }}>({item.portfolioWeight}% • {etfDescriptions[item.symbol]?.region})</span>
+                        </div>
                         <div className="item-subtitle">{item.subtitle}</div>
                         {etfDescriptions[item.symbol] && (
                           <div className="etf-description" style={{
                             fontSize: '10px',
                             color: '#888',
                             marginTop: '2px',
+                            marginBottom: '8px',
                             lineHeight: '1.2'
                           }}>
                             <div style={{ fontWeight: '500', marginBottom: '1px' }}>
@@ -409,6 +445,7 @@ function App() {
                           etfName={item.name}
                           mode={activePage === 'Portefeuille' ? 'Historique' : activePage}
                           purchasePrice={purchasePrices[item.symbol]}
+                          purchaseDate={purchaseDates[item.symbol]}
                           etfDescription={etfDescriptions[item.symbol]}
                           etfQuantity={etfQuantities[item.symbol]}
                         />

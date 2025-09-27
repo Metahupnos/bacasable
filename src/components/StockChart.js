@@ -23,7 +23,7 @@ ChartJS.register(
   Filler
 );
 
-function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice, etfDescription, etfQuantity }) {
+function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice, purchaseDate, etfDescription, etfQuantity }) {
   // Récupérer la période selon le mode
   const getGlobalPeriod = () => {
     if (mode === 'Depuis le début') {
@@ -341,7 +341,7 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <span style={{ color: '#888', fontSize: '11px' }}>
-              {etfDescription?.short || etfDescription} Acheté à {purchasePrice ? purchasePrice.toFixed(2) : 'N/A'} EUR
+              {etfDescription?.short || etfDescription} Acheté à {purchasePrice ? purchasePrice.toFixed(2) : 'N/A'} EUR ({purchaseDate})
             </span>
             <span style={{ color: '#888', fontSize: '11px' }}>
               {periodPerformance.firstPrice.toFixed(2)} → {periodPerformance.lastPrice.toFixed(2)}
