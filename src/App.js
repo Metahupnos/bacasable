@@ -102,6 +102,12 @@ function App() {
       category: 'Consumer Tech'
     },
     {
+      symbol: 'SOUN',
+      name: 'SoundHound AI',
+      description: 'Spécialisé dans la reconnaissance vocale et les assistants vocaux basés sur l\'intelligence artificielle. Fournisseur de solutions IA conversationnelle pour l\'automobile, la restauration et d\'autres secteurs.',
+      category: 'IA/Vocale'
+    },
+    {
       symbol: 'BTC-EUR',
       name: 'Bitcoin',
       description: 'Première cryptomonnaie mondiale, vue comme réserve de valeur. Volatile mais adoption croissante.',
