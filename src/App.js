@@ -8,6 +8,7 @@ import PortfolioChart from './components/PortfolioChart';
 function App() {
   const [portfolioData, setPortfolioData] = useState([]);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Depuis le début');
   const [activePage, setActivePage] = useState('Portefeuille');
