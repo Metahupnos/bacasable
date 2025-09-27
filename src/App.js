@@ -29,7 +29,7 @@ function App() {
   const [stockPerformances, setStockPerformances] = useState([]);
 
   // Actions à suivre pour la page Actions
-  const watchedStocks = [
+  const watchedStocks = useMemo(() => [
     {
       symbol: 'NVDA',
       name: 'NVIDIA',
@@ -222,7 +222,7 @@ function App() {
       description: 'Première cryptomonnaie mondiale, vue comme réserve de valeur. Volatile mais adoption croissante.',
       category: 'Cryptomonnaie'
     }
-  ];
+  ], []);
 
   // Configuration des prix d'achat pour le mode "Depuis le début"
   const purchasePrices = useMemo(() => ({
