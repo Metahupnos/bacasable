@@ -638,6 +638,8 @@ function App() {
                 {[
                   { key: '1d', label: '1J' },
                   { key: '5d', label: '5J' },
+                  { key: '10d', label: '10J' },
+                  { key: '20d', label: '20J' },
                   { key: '1m', label: '1M' },
                   { key: '3m', label: '3M' },
                   { key: '6m', label: '6M' },

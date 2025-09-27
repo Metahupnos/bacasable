@@ -38,6 +38,8 @@ exports.handler = async (event, context) => {
     const ranges = {
       '1d': '2d',
       '5d': '5d',
+      '10d': '10d',
+      '20d': '20d',
       '1m': '1mo',
       '3m': '3mo',
       '6m': '6mo',
@@ -49,6 +51,8 @@ exports.handler = async (event, context) => {
     const intervals = {
       '1d': '5m',
       '5d': '1d',
+      '10d': '1d',
+      '20d': '1d',
       '1m': '1d',
       '3m': '1d',
       '6m': '1wk',
