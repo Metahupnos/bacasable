@@ -372,21 +372,21 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-            <span style={{ fontWeight: '600', color: '#333' }}>{etfName}</span>
-            <span style={{ fontSize: '9px', color: '#666', fontFamily: 'monospace' }}>({symbol})</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontWeight: '600', color: '#333' }}>{etfName}</span>
+              <span style={{ fontSize: '9px', color: '#666', fontFamily: 'monospace' }}>({symbol})</span>
+            </div>
             {stockDescription && (
-              <span style={{
+              <div style={{
                 fontSize: '9px',
                 color: '#888',
                 fontStyle: 'italic',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '300px'
+                lineHeight: '1.3',
+                maxWidth: '90%'
               }}>
-                • {stockDescription}
-              </span>
+                {stockDescription}
+              </div>
             )}
           </div>
           <div style={{
