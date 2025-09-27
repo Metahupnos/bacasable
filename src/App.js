@@ -400,7 +400,10 @@ function App() {
               borderRadius: '12px',
               padding: '15px 20px',
               margin: '15px 0',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              position: 'sticky',
+              top: '10px',
+              zIndex: 100
             }}>
               <div style={{
                 display: 'flex',
@@ -624,7 +627,10 @@ function App() {
               borderRadius: '12px',
               padding: '15px 20px',
               margin: '15px 0',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              position: 'sticky',
+              top: '10px',
+              zIndex: 100
             }}>
               <div style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#333' }}>
                 Actions - Suivi
