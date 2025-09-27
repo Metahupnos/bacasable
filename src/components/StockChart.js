@@ -23,13 +23,15 @@ ChartJS.register(
   Filler
 );
 
-function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice, purchaseDate, etfDescription, etfQuantity }) {
+function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice, purchaseDate, etfDescription, etfQuantity, stockDescription }) {
   // Récupérer la période selon le mode
   const getGlobalPeriod = () => {
     if (mode === 'Depuis le début') {
       return '1m'; // Toujours 1m pour "Depuis le début"
     } else if (mode === 'Aujourd\'hui') {
       return '1d'; // Utiliser 1d comme le portefeuille pour synchroniser
+    } else if (mode === 'Actions') {
+      return '1y'; // Période par défaut pour la page Actions
     }
     try {
       return localStorage.getItem('etf-chart-period') || '1m';
@@ -62,8 +64,10 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
   // Écouter les changements de période depuis d'autres composants
   useEffect(() => {
     const handleGlobalPeriodChange = (event) => {
-      // Écouter partout pour débugger
-      setSelectedPeriod(event.detail);
+      // Écouter seulement pour les modes appropriés
+      if (mode === 'Actions' || mode === 'Historique') {
+        setSelectedPeriod(event.detail);
+      }
     };
 
     window.addEventListener('etf-period-changed', handleGlobalPeriodChange);
@@ -368,7 +372,23 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <span>Évolution {periods.find(p => p.key === periodPerformance.period)?.label || periodPerformance.period}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+            <span style={{ fontWeight: '600', color: '#333' }}>{etfName}</span>
+            <span style={{ fontSize: '9px', color: '#666', fontFamily: 'monospace' }}>({symbol})</span>
+            {stockDescription && (
+              <span style={{
+                fontSize: '9px',
+                color: '#888',
+                fontStyle: 'italic',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '300px'
+              }}>
+                • {stockDescription}
+              </span>
+            )}
+          </div>
           <div style={{
             background: periodPerformance.isPositive ? '#d4edda' : '#f8d7da',
             color: periodPerformance.isPositive ? '#155724' : '#721c24',
@@ -381,6 +401,7 @@ function StockChart({ symbol, etfName, mode = 'Depuis le début', purchasePrice,
           </div>
         </div>
       )}
+
 
       {/* Graphique */}
       <div className="chart-container">

@@ -15,7 +15,7 @@ class FinanceService {
   async getETFQuote(symbol) {
     try {
       // Utilisation de notre proxy local Node/Express ou Netlify Function
-      const PROXY_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4000';
+      const PROXY_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
       const response = await axios.get(`${PROXY_BASE_URL}/api/finance/${symbol}`, {
         timeout: 15000,
         headers: {
@@ -79,12 +79,12 @@ class FinanceService {
       throw new Error('Format de données inattendu');
     } catch (error) {
       if (error.code === 'ECONNREFUSED') {
-        console.error(`❌ Proxy server non démarré sur localhost:4000. Démarrez-le avec: cd finance-proxy && npm start`);
+        console.error(`❌ Proxy server non démarré sur localhost:4001. Démarrez-le avec: cd finance-proxy && node server.js`);
+        throw new Error('Serveur proxy finance non disponible sur localhost:4001');
       } else {
         console.error(`❌ Erreur proxy pour ${symbol}:`, error.message);
+        throw new Error(`Erreur lors de la récupération des données pour ${symbol}: ${error.message}`);
       }
-      // En cas d'erreur, utiliser des données simulées mais réalistes avec variation
-      return this.generateRealtimeMockData(symbol);
     }
   }
 
@@ -230,8 +230,8 @@ class FinanceService {
       return portfolioData.sort((a, b) => (b.rawPrice * this.getHoldingsForETF(b.name)) - (a.rawPrice * this.getHoldingsForETF(a.name)));
     } catch (error) {
       console.error('Erreur lors de la récupération des données:', error);
-      // Retourner les données statiques en cas d'erreur
-      return this.getStaticPortfolioData();
+      // Ne plus retourner de données simulées, laisser l'erreur remonter
+      throw error;
     }
   }
 
