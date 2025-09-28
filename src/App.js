@@ -473,7 +473,7 @@ function App() {
   };
 
   const getYahooFinanceUrl = (symbol) => {
-    return `https://finance.yahoo.com/quote/${symbol}`;
+    return `https://fr.finance.yahoo.com/quote/${symbol}`;
   };
 
   // Fonction supprimée car non utilisée
