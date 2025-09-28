@@ -476,6 +476,25 @@ function App() {
     return `https://fr.finance.yahoo.com/quote/${symbol}`;
   };
 
+  // Fonction pour naviguer vers un graphique d'action
+  const scrollToStock = (symbol) => {
+    const element = document.getElementById(`stock-${symbol}`);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+      // Ajouter un effet visuel temporaire
+      element.style.transition = 'all 0.3s ease';
+      element.style.boxShadow = '0 4px 20px rgba(32, 184, 224, 0.3)';
+      element.style.transform = 'scale(1.02)';
+      setTimeout(() => {
+        element.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+        element.style.transform = 'scale(1)';
+      }, 1000);
+    }
+  };
+
   // Fonction supprimée car non utilisée
 
   const toggleETFChart = (symbol) => {
@@ -858,13 +877,16 @@ function App() {
             {/* Graphiques pour toutes les actions suivies */}
             <div className="actions-list">
               {watchedStocks.map((stock, index) => (
-                <div key={stock.symbol} style={{
-                  background: '#fff',
-                  borderRadius: '12px',
-                  padding: '10px',
-                  margin: '8px 0',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                }}>
+                <div
+                  key={stock.symbol}
+                  id={`stock-${stock.symbol}`}
+                  style={{
+                    background: '#fff',
+                    borderRadius: '12px',
+                    padding: '10px',
+                    margin: '8px 0',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}>
                   {/* Graphique de l'action avec infos intégrées */}
                   <div className="stock-chart-container" style={{ position: 'relative' }}>
                     {/* En-tête minimal au-dessus du graphique */}
@@ -941,20 +963,41 @@ function App() {
                     actionsSelectedPeriod === '5y' ? '5A' :
                     actionsSelectedPeriod === '10y' ? '10A' : actionsSelectedPeriod}
                 </h3>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#666',
+                  margin: '0 0 12px 0',
+                  fontStyle: 'italic'
+                }}>
+                  💡 Cliquez sur une action pour naviguer vers son graphique
+                </p>
                 <div style={{
                   display: 'grid',
                   gap: '8px'
                 }}>
                   {stockPerformances.map((stock, index) => (
-                    <div key={stock.symbol} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '8px 12px',
-                      background: index % 2 === 0 ? '#f8f9fa' : '#fff',
-                      borderRadius: '6px',
-                      fontSize: '13px'
-                    }}>
+                    <div
+                      key={stock.symbol}
+                      onClick={() => scrollToStock(stock.symbol)}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '8px 12px',
+                        background: index % 2 === 0 ? '#f8f9fa' : '#fff',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#e3f2fd';
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = index % 2 === 0 ? '#f8f9fa' : '#fff';
+                        e.currentTarget.style.transform = 'translateX(0)';
+                      }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: '600', color: '#333' }}>
                           {stock.symbol} - {stock.name}
