@@ -31,8 +31,9 @@ function Portfolio() {
       setLoading(true);
       const promises = etfs.map(async (etf) => {
         try {
-          // Utiliser le proxy local
-          const url = `http://localhost:4001/api/finance/${etf.symbol}`;
+          // Utiliser l'API Netlify en production, localhost en développement
+          const apiBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
+          const url = `${apiBase}/api/finance/${etf.symbol}`;
           console.log(`Fetching ${etf.symbol} from ${url}`);
           const response = await axios.get(url);
           console.log(`Response for ${etf.symbol}:`, response.data);

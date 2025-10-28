@@ -104,9 +104,12 @@ function Charts() {
         try {
           let combinedData;
 
+          // Utiliser l'API Netlify en production, localhost en développement
+          const apiBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
+
           // Pour les périodes courtes intraday (1d, 5d), utiliser SEULEMENT les données de la période
           if (['1d', '5d'].includes(selectedPeriod)) {
-            const url = `http://localhost:4001/api/history/${etf.symbol}/${selectedPeriod}`;
+            const url = `${apiBase}/api/history/${etf.symbol}/${selectedPeriod}`;
             console.log(`Fetching intraday data for ${etf.symbol} (${selectedPeriod})`);
             const response = await axios.get(url);
 
@@ -124,7 +127,7 @@ function Charts() {
           } else {
             // Pour les périodes plus longues, utiliser l'approche hybride
             // 1. Récupérer les données quotidiennes
-            const urlDaily = `http://localhost:4001/api/history/${etf.symbol}/${selectedPeriod}`;
+            const urlDaily = `${apiBase}/api/history/${etf.symbol}/${selectedPeriod}`;
             console.log(`Fetching daily data for ${etf.symbol} (${selectedPeriod})`);
             const responseDaily = await axios.get(urlDaily);
 
@@ -148,7 +151,7 @@ function Charts() {
               .filter(item => item.price !== null && new Date(item.timestamp * 1000) < fiveDaysAgo);
 
             // 2. Récupérer les données détaillées sur 5 jours
-            const url5d = `http://localhost:4001/api/history/${etf.symbol}/5d`;
+            const url5d = `${apiBase}/api/history/${etf.symbol}/5d`;
             console.log(`Fetching detailed 5d data for ${etf.symbol}`);
             const response5d = await axios.get(url5d);
 
