@@ -11,6 +11,9 @@ function Charts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('2y');
+  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
+  const [isCustomRange, setIsCustomRange] = useState(false);
+  const [lastAvailableDate, setLastAvailableDate] = useState('');
 
   const etfs = [
     { symbol: 'CSPX.AS', name: 'iShares Core S&P 500', color: '#4caf50', units: 354 },
@@ -19,6 +22,8 @@ function Charts() {
     { symbol: 'SC0J.DE', name: 'Invesco MSCI World Small Cap', color: '#9c27b0', units: 796 },
     { symbol: 'EQEU.DE', name: 'Invesco Nasdaq-100 Acc', color: '#f44336', units: 144 }
   ];
+
+  const CREATION_DATE = '2025-08-29'; // Date de création du portefeuille
 
   const periods = [
     { value: '1d', label: '1J' },
@@ -33,11 +38,63 @@ function Charts() {
 
   // Déterminer si on est en période intraday (afficher l'heure)
   const isIntradayPeriod = ['1d', '5d'].includes(selectedPeriod);
+  // Pour 1J uniquement, afficher les heures sur l'axe X
+  const isOneDayPeriod = selectedPeriod === '1d';
 
   useEffect(() => {
-    fetchHistoricalData();
+    if (!isCustomRange) {
+      fetchHistoricalData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPeriod]);
+
+  const applyCustomRange = () => {
+    if (!customDateRange.start || !customDateRange.end) {
+      alert('Veuillez sélectionner une date de début et une date de fin');
+      return;
+    }
+    setIsCustomRange(true);
+    setSelectedPeriod('2y'); // Charger 2 ans de données
+    fetchHistoricalData();
+  };
+
+  const filterDataByCustomRange = (data) => {
+    if (!isCustomRange || !customDateRange.start || !customDateRange.end) {
+      return data;
+    }
+
+    const startDate = new Date(customDateRange.start);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(customDateRange.end);
+    endDate.setHours(23, 59, 59, 999);
+
+    console.log('Filtering data:', {
+      start: startDate,
+      end: endDate,
+      dataCount: data.length,
+      sampleItem: data[0]
+    });
+
+    const filtered = data.filter(item => {
+      // Les données du portfolio n'ont pas de timestamp, mais les ETF oui
+      let itemDate;
+      if (item.timestamp) {
+        itemDate = new Date(item.timestamp * 1000);
+      } else if (item.date) {
+        // Convertir la date au format "DD/MM/YYYY" en objet Date
+        const parts = item.date.split('/');
+        itemDate = new Date(parts[2], parts[1] - 1, parts[0]);
+      } else {
+        return false;
+      }
+
+      const inRange = itemDate >= startDate && itemDate <= endDate;
+      return inRange;
+    });
+
+    console.log('Filtered data:', filtered.length);
+    return filtered;
+  };
 
   const fillMissingValues = (data) => {
     // Combler les valeurs manquantes avec la dernière valeur connue
@@ -119,12 +176,16 @@ function Charts() {
             const timestamps = result.timestamp;
             const prices = result.indicators.quote[0].close;
 
-            combinedData = timestamps.map((timestamp, index) => ({
-              timestamp: timestamp,
-              date: new Date(timestamp * 1000).toLocaleDateString('fr-FR'),
-              time: new Date(timestamp * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-              price: prices[index] ? parseFloat(prices[index].toFixed(2)) : null
-            })).filter(item => item.price !== null);
+            combinedData = timestamps.map((timestamp, index) => {
+              const date = new Date(timestamp * 1000);
+              return {
+                timestamp: timestamp,
+                date: date.toLocaleDateString('fr-FR'),
+                time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                datetime: `${date.toLocaleDateString('fr-FR')} ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
+                price: prices[index] ? parseFloat(prices[index].toFixed(2)) : null
+              };
+            }).filter(item => item.price !== null);
 
           } else {
             // Pour les périodes plus longues, utiliser l'approche hybride
@@ -263,9 +324,11 @@ function Charts() {
 
       // Ne garder que les timestamps où tous les ETF ont une valeur (réelle ou forward-filled)
       if (allEtfsHaveValue && totalValue > 0) {
+        const date = new Date(timestamp * 1000);
         return {
-          date: new Date(timestamp * 1000).toLocaleDateString('fr-FR'),
-          time: new Date(timestamp * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          date: date.toLocaleDateString('fr-FR'),
+          time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          datetime: `${date.toLocaleDateString('fr-FR')} ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
           value: parseFloat(totalValue.toFixed(2))
         };
       }
@@ -274,6 +337,19 @@ function Charts() {
 
     console.log(`Portfolio total: ${portfolioValues.length} points calculés (sur ${sortedTimestamps.length} timestamps)`);
     setPortfolioData(portfolioValues);
+
+    // Définir la dernière date disponible
+    if (portfolioValues.length > 0) {
+      const lastTimestamp = portfolioValues[portfolioValues.length - 1];
+      const lastDate = new Date(lastTimestamp.date.split('/').reverse().join('-'));
+      const formattedDate = lastDate.toISOString().split('T')[0];
+      setLastAvailableDate(formattedDate);
+
+      // Mettre à jour le champ "Au" si pas encore défini
+      if (!customDateRange.end) {
+        setCustomDateRange(prev => ({ ...prev, end: formattedDate }));
+      }
+    }
   };
 
   if (loading) {
@@ -306,26 +382,80 @@ function Charts() {
           {periods.map((period) => (
             <button
               key={period.value}
-              className={`period-button ${selectedPeriod === period.value ? 'active' : ''}`}
-              onClick={() => setSelectedPeriod(period.value)}
+              className={`period-button ${selectedPeriod === period.value && !isCustomRange ? 'active' : ''}`}
+              onClick={() => {
+                if (period.value === 'creation') {
+                  // Pour "Création", définir la plage personnalisée
+                  setCustomDateRange({ start: CREATION_DATE, end: lastAvailableDate });
+                  setIsCustomRange(true);
+                  setSelectedPeriod('2y'); // Charger 2 ans pour être sûr d'avoir toutes les données
+                  fetchHistoricalData();
+                } else {
+                  setSelectedPeriod(period.value);
+                  setIsCustomRange(false);
+                }
+              }}
             >
               {period.label}
             </button>
           ))}
         </div>
+
+        <div className="custom-date-range">
+          <label>
+            Du :
+            <input
+              type="date"
+              value={customDateRange.start}
+              onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+              className="date-input"
+            />
+          </label>
+          <label>
+            Au :
+            <input
+              type="date"
+              value={customDateRange.end}
+              onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+              className="date-input"
+            />
+          </label>
+          <button onClick={applyCustomRange} className="apply-button">
+            Appliquer
+          </button>
+          {isCustomRange && (
+            <button onClick={() => {
+              setIsCustomRange(false);
+              setCustomDateRange({ start: '', end: lastAvailableDate });
+              fetchHistoricalData();
+            }} className="reset-button">
+              Réinitialiser
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Graphique du portefeuille total */}
-      {portfolioData.length > 0 && (
+      {portfolioData.length > 0 && (() => {
+        const filteredPortfolioData = filterDataByCustomRange(portfolioData);
+        if (filteredPortfolioData.length === 0) {
+          return (
+            <div className="chart-section portfolio-total-section">
+              <h2>Portfolio</h2>
+              <p className="error">Aucune donnée disponible pour cette période</p>
+            </div>
+          );
+        }
+        return (
         <div className="chart-section portfolio-total-section">
           <h2>
             Portfolio
             {(() => {
-              const perf = calculatePerformance(portfolioData.map(d => ({ price: d.value })));
-              if (perf !== null && portfolioData.length > 0) {
+              const perf = calculatePerformance(filteredPortfolioData.map(d => ({ price: d.value })));
+              if (perf !== null && filteredPortfolioData.length > 0) {
                 const perfNum = parseFloat(perf);
-                const firstValue = portfolioData[0].value;
-                const lastValue = portfolioData[portfolioData.length - 1].value;
+                const firstValue = filteredPortfolioData[0].value;
+                const lastValue = filteredPortfolioData[filteredPortfolioData.length - 1].value;
                 const perfAmount = lastValue - firstValue;
                 return (
                   <span style={{
@@ -352,18 +482,40 @@ function Charts() {
             })()}
           </h2>
           <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={portfolioData}>
+            <LineChart data={filteredPortfolioData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
               <XAxis
-                dataKey="date"
+                dataKey={isIntradayPeriod ? "datetime" : "date"}
                 stroke="#9fa3a8"
                 tick={{ fontSize: 12 }}
                 interval="preserveStartEnd"
                 tickFormatter={(value, index) => {
-                  if (index % Math.floor(portfolioData.length / 6) === 0) {
-                    return value;
+                  if (isOneDayPeriod) {
+                    // Pour 1J, extraire uniquement l'heure
+                    const parts = value.split(' ');
+                    const time = parts[1] || value;
+                    const tickInterval = Math.floor(filteredPortfolioData.length / 10);
+                    if (index % tickInterval === 0 || index === portfolioData.length - 1) {
+                      return time;
+                    }
+                    return '';
+                  } else if (selectedPeriod === '5d') {
+                    // Pour 5J, extraire uniquement la date
+                    const parts = value.split(' ');
+                    const date = parts[0] || value;
+                    const tickInterval = Math.floor(filteredPortfolioData.length / 6);
+                    if (index % tickInterval === 0 || index === portfolioData.length - 1) {
+                      return date;
+                    }
+                    return '';
+                  } else {
+                    // Pour les autres périodes
+                    const tickInterval = Math.floor(filteredPortfolioData.length / 6);
+                    if (index % tickInterval === 0 || index === portfolioData.length - 1) {
+                      return value;
+                    }
+                    return '';
                   }
-                  return '';
                 }}
               />
               <YAxis
@@ -400,7 +552,8 @@ function Charts() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      )}
+        );
+      })()}
 
       {/* Graphiques individuels des ETF */}
       {etfs.map((etf) => {
@@ -411,6 +564,17 @@ function Charts() {
             <div key={etf.symbol} className="chart-section">
               <h2>{etf.name} ({etf.symbol})</h2>
               <p className="error">Données non disponibles</p>
+            </div>
+          );
+        }
+
+        const filteredChartData = filterDataByCustomRange(chartData.data);
+
+        if (filteredChartData.length === 0) {
+          return (
+            <div key={etf.symbol} className="chart-section">
+              <h2>{etf.name} ({etf.symbol})</h2>
+              <p className="error">Aucune donnée disponible pour cette période</p>
             </div>
           );
         }
@@ -429,11 +593,11 @@ function Charts() {
               </a>
               )
               {(() => {
-                const perf = calculatePerformance(chartData.data);
-                if (perf !== null && chartData.data.length > 0) {
+                const perf = calculatePerformance(filteredChartData);
+                if (perf !== null && filteredChartData.length > 0) {
                   const perfNum = parseFloat(perf);
-                  const firstPrice = chartData.data[0].price;
-                  const lastPrice = chartData.data[chartData.data.length - 1].price;
+                  const firstPrice = filteredChartData[0].price;
+                  const lastPrice = filteredChartData[filteredChartData.length - 1].price;
                   const priceChange = lastPrice - firstPrice;
                   const perfAmount = priceChange * etf.units;
                   return (
@@ -461,19 +625,40 @@ function Charts() {
               })()}
             </h2>
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData.data}>
+              <LineChart data={filteredChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
                 <XAxis
-                  dataKey="date"
+                  dataKey={isIntradayPeriod ? "datetime" : "date"}
                   stroke="#9fa3a8"
                   tick={{ fontSize: 12 }}
                   interval="preserveStartEnd"
                   tickFormatter={(value, index) => {
-                    // Afficher seulement quelques dates pour éviter l'encombrement
-                    if (index % Math.floor(chartData.data.length / 6) === 0) {
-                      return value;
+                    if (isOneDayPeriod) {
+                      // Pour 1J, extraire uniquement l'heure
+                      const parts = value.split(' ');
+                      const time = parts[1] || value;
+                      const tickInterval = Math.floor(filteredChartData.length / 10);
+                      if (index % tickInterval === 0 || index === filteredChartData.length - 1) {
+                        return time;
+                      }
+                      return '';
+                    } else if (selectedPeriod === '5d') {
+                      // Pour 5J, extraire uniquement la date
+                      const parts = value.split(' ');
+                      const date = parts[0] || value;
+                      const tickInterval = Math.floor(filteredChartData.length / 6);
+                      if (index % tickInterval === 0 || index === filteredChartData.length - 1) {
+                        return date;
+                      }
+                      return '';
+                    } else {
+                      // Pour les autres périodes
+                      const tickInterval = Math.floor(filteredChartData.length / 6);
+                      if (index % tickInterval === 0 || index === filteredChartData.length - 1) {
+                        return value;
+                      }
+                      return '';
                     }
-                    return '';
                   }}
                 />
                 <YAxis

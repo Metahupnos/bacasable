@@ -1,7 +1,7 @@
 .sales-history-container {
   background-color: #282c34;
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: 70px 20px 40px 20px;
   color: white;
 }
 
@@ -21,56 +21,58 @@
 
 .sales-summary {
   max-width: 800px;
-  margin: 0 auto 40px;
+  margin: 0 auto 30px;
   background-color: #1e2228;
   border-radius: 8px;
-  padding: 20px;
+  padding: 12px 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   border: 2px solid #61dafb;
 }
 
 .sales-summary h2 {
   color: #61dafb;
-  margin-bottom: 20px;
-  font-size: 1.3rem;
+  margin-bottom: 12px;
+  font-size: 1rem;
 }
 
 .summary-grid {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 6px;
 }
 
 .summary-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 4px 0;
   border-bottom: 1px solid #3a3f47;
 }
 
 .summary-item.total {
   border-bottom: none;
   border-top: 2px solid #61dafb;
-  padding-top: 15px;
-  margin-top: 5px;
+  padding-top: 8px;
+  margin-top: 3px;
 }
 
 .summary-label {
-  font-weight: 500;
-  color: #e6e6e6;
+  font-weight: normal;
+  color: #9fa3a8;
+  font-size: 0.85rem;
 }
 
 .summary-item.total .summary-label,
 .summary-item.total .summary-value {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: normal;
   color: #61dafb;
 }
 
 .summary-value {
-  font-weight: 600;
+  font-weight: normal;
   color: #4caf50;
+  font-size: 0.85rem;
 }
 
 .summary-value.negative {
@@ -177,6 +179,10 @@
 
 .detail-row.net-amount .detail-value {
   color: #4caf50;
+}
+
+.detail-row.net-amount .detail-value.negative {
+  color: #ff6b6b;
 }
 
 /* Responsive Mobile */
