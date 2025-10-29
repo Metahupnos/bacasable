@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './SalesHistory.css';
 
 function SalesHistory() {
+  const navigate = useNavigate();
   const salesData = [
     {
       orderNumber: '090098246',
@@ -82,11 +84,13 @@ function SalesHistory() {
 
   return (
     <div className="sales-history-container">
-      <h1>Historique des Ventes</h1>
-      <p className="sales-date">Date de transaction : 28 octobre 2025</p>
+      <div className="nav-buttons">
+        <button onClick={() => navigate('/')} className="nav-button">Portfolio</button>
+        <button onClick={() => navigate('/charts')} className="nav-button">Graphiques</button>
+      </div>
 
       <div className="sales-summary">
-        <h2>Résumé</h2>
+        <h2>Résumé du 28 octobre 2025</h2>
         <div className="summary-grid">
           <div className="summary-item">
             <span className="summary-label">Nombre de transactions :</span>

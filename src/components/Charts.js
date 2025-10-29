@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './Charts.css';
 
 function Charts() {
+  const navigate = useNavigate();
   const [chartsData, setChartsData] = useState({});
   const [portfolioData, setPortfolioData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -294,6 +296,11 @@ function Charts() {
 
   return (
     <div className="charts-container">
+      <div className="nav-buttons">
+        <button onClick={() => navigate('/')} className="nav-button">Portfolio</button>
+        <button onClick={() => navigate('/sales')} className="nav-button">Ordres</button>
+      </div>
+
       <div className="header-controls">
         <div className="period-selector">
           {periods.map((period) => (
@@ -306,9 +313,6 @@ function Charts() {
             </button>
           ))}
         </div>
-        <button onClick={() => window.location.href = '/'} className="back-button">
-          Retour au portfolio
-        </button>
       </div>
 
       {/* Graphique du portefeuille total */}

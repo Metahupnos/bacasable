@@ -2,6 +2,34 @@
   text-align: center;
 }
 
+.nav-buttons {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.nav-button {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9fa3a8;
+  background-color: rgba(30, 34, 40, 0.85);
+  border: 1px solid #3a3f47;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.nav-button:hover {
+  color: #61dafb;
+  border-color: #61dafb;
+  background-color: rgba(30, 34, 40, 0.95);
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -34,7 +62,7 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .portfolio-table thead {

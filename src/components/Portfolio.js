@@ -82,6 +82,10 @@ function Portfolio() {
     return etfs.reduce((sum, etf) => sum + (etf.sellPrice * etf.units), 0);
   };
 
+  const getTotalSellNetValue = () => {
+    return getTotalSellValue() * 0.9973; // 0.27% de frais (0.15% courtage + 0.12% taxe)
+  };
+
   const formatNumber = (num) => {
     if (num === null || num === undefined) return 'N/A';
     return new Intl.NumberFormat('fr-FR', {
@@ -93,6 +97,12 @@ function Portfolio() {
   return (
     <div className="App">
       <header className="App-header">
+        <div className="nav-buttons">
+          <button onClick={fetchPrices} className="nav-button">Actualiser</button>
+          <button onClick={() => navigate('/charts')} className="nav-button">Graphiques</button>
+          <button onClick={() => navigate('/sales')} className="nav-button">Ordres</button>
+        </div>
+
         {loading && <p>Chargement des données...</p>}
         {error && <p className="error">{error}</p>}
 
@@ -105,6 +115,7 @@ function Portfolio() {
                   <th>Vente</th>
                   <th>Actuel</th>
                   <th>Total vente</th>
+                  <th>Total vente net</th>
                   <th>Total actuel</th>
                 </tr>
               </thead>
@@ -135,6 +146,9 @@ function Portfolio() {
                     <td className="etf-sell-total">
                       {formatNumber(etf.sellPrice * etf.units)} EUR
                     </td>
+                    <td className="etf-sell-total">
+                      {formatNumber(etf.sellPrice * etf.units * 0.9973)} EUR
+                    </td>
                     <td className="etf-total">
                       {etf.total ? (
                         `${formatNumber(etf.total)} ${etf.currency}`
@@ -144,32 +158,38 @@ function Portfolio() {
                     </td>
                   </tr>
                 ))}
-                <tr className="total-row">
-                  <td colSpan="3"><strong>TOTAL</strong></td>
-                  <td><strong>{formatNumber(getTotalSellValue())} EUR</strong></td>
-                  <td><strong>{formatNumber(getTotalValue())} EUR</strong></td>
+                <tr className="total-row" style={{ fontSize: '0.75rem' }}>
+                  <td colSpan="3">TOTAL</td>
+                  <td>{formatNumber(getTotalSellValue())} EUR</td>
+                  <td>{formatNumber(getTotalSellNetValue())} EUR</td>
+                  <td>{formatNumber(getTotalValue())} EUR</td>
                 </tr>
-                <tr className="total-row difference-row">
-                  <td colSpan="3"><strong>DIFFÉRENCE</strong></td>
-                  <td></td>
+                <tr className="total-row difference-row" style={{ fontSize: '0.75rem' }}>
+                  <td colSpan="3">DIFFÉRENCE</td>
                   <td>
-                    <strong className={getTotalValue() - getTotalSellValue() >= 0 ? 'positive' : 'negative'}>
+                    <div className={getTotalValue() - getTotalSellValue() >= 0 ? 'positive' : 'negative'}>
                       {formatNumber(getTotalValue() - getTotalSellValue())} EUR
-                      {' '}({((getTotalValue() - getTotalSellValue()) / getTotalSellValue() * 100).toFixed(2)}%)
-                    </strong>
+                    </div>
+                    <div className={getTotalValue() - getTotalSellValue() >= 0 ? 'positive' : 'negative'} style={{ fontSize: '0.7rem', marginTop: '2px' }}>
+                      {((getTotalValue() - getTotalSellValue()) / getTotalSellValue() * 100).toFixed(2)}%
+                    </div>
+                  </td>
+                  <td>
+                    <div className={getTotalValue() - getTotalSellNetValue() >= 0 ? 'positive' : 'negative'}>
+                      {formatNumber(getTotalValue() - getTotalSellNetValue())} EUR
+                    </div>
+                    <div className={getTotalValue() - getTotalSellNetValue() >= 0 ? 'positive' : 'negative'} style={{ fontSize: '0.7rem', marginTop: '2px' }}>
+                      {((getTotalValue() - getTotalSellNetValue()) / getTotalSellNetValue() * 100).toFixed(2)}%
+                    </div>
+                  </td>
+                  <td>
                   </td>
                 </tr>
               </tbody>
             </table>
-
-            <div className="button-container">
-              <button onClick={fetchPrices} className="refresh-button">
-                Actualiser les prix
-              </button>
-              <button onClick={() => navigate('/charts')} className="charts-button">
-                Voir les graphiques
-              </button>
-            </div>
+            <p style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '10px', textAlign: 'center' }}>
+              * Total vente net = Total vente - 0.27% de frais (0.15% courtage + 0.12% taxe de bourse)
+            </p>
           </>
         )}
       </header>
