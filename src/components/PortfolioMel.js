@@ -114,7 +114,14 @@ function PortfolioMel() {
           <button onClick={() => navigate('/mel/charts')} className="nav-button">Graphiques</button>
         </div>
 
-        <h1 style={{ fontSize: '1.5rem', marginTop: '20px' }}>Portfolio Mel</h1>
+        <h1 style={{ fontSize: '1.5rem', marginTop: '20px' }}>
+          Portfolio Mel
+          {!loading && getTotalCurrentEUR() && (
+            <span style={{ fontSize: '1rem', color: '#61dafb', marginLeft: '10px' }}>
+              ({formatNumber(getTotalCurrentEUR() + 4042.50)} EUR)
+            </span>
+          )}
+        </h1>
 
         {loading && <p>Chargement des données...</p>}
         {error && <p className="error">{error}</p>}
@@ -140,6 +147,7 @@ function PortfolioMel() {
                   const totalCurrentEUR = stock.totalUSD && eurUsdRate ? stock.totalUSD / eurUsdRate : null;
                   const diffEUR = totalCurrentEUR ? totalCurrentEUR - stock.buyValueEUR : null;
                   const diffPercentEUR = diffEUR ? (diffEUR / stock.buyValueEUR * 100) : null;
+                  const portfolioPercent = stock.totalUSD && getTotalCurrentUSD() > 0 ? (stock.totalUSD / getTotalCurrentUSD() * 100) : null;
 
                   return (
                     <tr key={index}>
@@ -151,7 +159,7 @@ function PortfolioMel() {
                           rel="noopener noreferrer"
                           className="etf-symbol-link"
                         >
-                          {stock.symbol} ({stock.units})
+                          {stock.symbol} ({stock.units} unités) {portfolioPercent !== null && <span style={{ color: '#61dafb' }}>• {portfolioPercent.toFixed(1)}%</span>}
                         </a>
                       </td>
                       <td className="etf-sell-price">

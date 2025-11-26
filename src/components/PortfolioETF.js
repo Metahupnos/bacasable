@@ -130,7 +130,7 @@ function PortfolioETF() {
                         rel="noopener noreferrer"
                         className="etf-symbol-link"
                       >
-                        {etf.symbol} ({etf.units})
+                        {etf.symbol} ({etf.units} unités)
                       </a>
                     </td>
                     <td className="etf-sell-price">
