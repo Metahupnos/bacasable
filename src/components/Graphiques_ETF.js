@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import './Charts.css';
+import './Graphiques_ETF.css';
 
-function Charts() {
+function Graphiques_ETF() {
   const navigate = useNavigate();
   const [chartsData, setChartsData] = useState({});
   const [portfolioData, setPortfolioData] = useState([]);
@@ -373,8 +373,8 @@ function Charts() {
   return (
     <div className="charts-container">
       <div className="nav-buttons">
-        <button onClick={() => navigate('/')} className="nav-button">Portfolio</button>
-        <button onClick={() => navigate('/sales')} className="nav-button">Ordres</button>
+        <button onClick={() => navigate('/etf')} className="nav-button">Portfolio</button>
+        <button onClick={() => navigate('/etf/sales')} className="nav-button">Ordres</button>
       </div>
 
       <div className="header-controls">
@@ -700,4 +700,4 @@ function Charts() {
   );
 }
 
-export default Charts;
+export default Graphiques_ETF;

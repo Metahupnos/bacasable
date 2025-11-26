@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
-function Portfolio() {
+function Portfolio_ETF() {
   const navigate = useNavigate();
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,8 +99,8 @@ function Portfolio() {
       <header className="App-header">
         <div className="nav-buttons">
           <button onClick={fetchPrices} className="nav-button">Actualiser</button>
-          <button onClick={() => navigate('/charts')} className="nav-button">Graphiques</button>
-          <button onClick={() => navigate('/sales')} className="nav-button">Ordres</button>
+          <button onClick={() => navigate('/etf/charts')} className="nav-button">Graphiques</button>
+          <button onClick={() => navigate('/etf/sales')} className="nav-button">Ordres</button>
         </div>
 
         {loading && <p>Chargement des données...</p>}
@@ -197,4 +197,4 @@ function Portfolio() {
   );
 }
 
-export default Portfolio;
+export default Portfolio_ETF;

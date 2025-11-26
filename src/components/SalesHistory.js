@@ -286,8 +286,8 @@ function SalesHistory() {
   return (
     <div className="sales-history-container">
       <div className="nav-buttons">
-        <button onClick={() => navigate('/')} className="nav-button">Portfolio</button>
-        <button onClick={() => navigate('/charts')} className="nav-button">Graphiques</button>
+        <button onClick={() => navigate('/etf')} className="nav-button">Portfolio</button>
+        <button onClick={() => navigate('/etf/charts')} className="nav-button">Graphiques</button>
       </div>
 
       <div className="sales-summary" style={{ borderColor: '#2196f3', background: 'linear-gradient(135deg, #1e2228 0%, #1e2838 100%)' }}>

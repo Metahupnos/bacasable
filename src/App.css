@@ -245,6 +245,45 @@
   color: #ff6b6b;
 }
 
+/* Portfolio Cards - Home Page */
+.portfolio-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  max-width: 1200px;
+  padding: 20px;
+}
+
+.portfolio-card {
+  background-color: #1e2228;
+  border: 2px solid #3a3f47;
+  border-radius: 12px;
+  padding: 30px;
+  min-width: 280px;
+  max-width: 350px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.portfolio-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  background-color: #2a2f36;
+}
+
+.portfolio-card h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
+}
+
+.portfolio-card p {
+  margin: 0;
+  color: #9fa3a8;
+  font-size: 0.9rem;
+}
+
 /* Responsive Mobile */
 @media (max-width: 768px) {
   .App-header {
