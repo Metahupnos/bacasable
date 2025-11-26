@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import './Graphiques_ETF.css';
+import './GraphiquesETF.css';
 
-function Graphiques_Met() {
+function GraphiquesMet() {
   const navigate = useNavigate();
   const [chartsData, setChartsData] = useState({});
   const [portfolioData, setPortfolioData] = useState([]);
@@ -31,7 +31,6 @@ function Graphiques_Met() {
   ];
 
   const isIntradayPeriod = ['1d', '5d'].includes(selectedPeriod);
-  const isOneDayPeriod = selectedPeriod === '1d';
 
   useEffect(() => {
     fetchHistoricalData();
@@ -222,4 +221,4 @@ function Graphiques_Met() {
   );
 }
 
-export default Graphiques_Met;
+export default GraphiquesMet;

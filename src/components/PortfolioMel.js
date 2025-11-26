@@ -3,20 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
-function Portfolio_ChL() {
+function PortfolioMel() {
   const navigate = useNavigate();
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [eurUsdRate, setEurUsdRate] = useState(null); // Taux EUR/USD
+  const [eurUsdRate, setEurUsdRate] = useState(null);
 
-  // Données du portefeuille ChL - Actions US
+  // Données du portefeuille Mel - Actions US
   const stocks = [
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 222, buyPriceUSD: 1109.94, buyValueEUR: 212657.88 },
-    { symbol: 'GOOGL', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 323.44, buyValueEUR: 97699.15 },
-    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', units: 75, buyPriceUSD: 787.32, buyValueEUR: 50961.42 },
-    { symbol: 'AVGO', name: 'Broadcom Inc.', units: 150, buyPriceUSD: 385.03, buyValueEUR: 49844.22 },
-    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 65, buyPriceUSD: 766.68, buyValueEUR: 43008.72 }
+    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 146, buyPriceUSD: 1109.94, buyValueEUR: 139892.30 },
+    { symbol: 'GOOGL', name: 'Alphabet Inc. (Class A)', units: 135, buyPriceUSD: 323.44, buyValueEUR: 37693.72 },
+    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 42, buyPriceUSD: 766.68, buyValueEUR: 27797.44 }
   ];
 
   useEffect(() => {
@@ -45,7 +43,6 @@ function Portfolio_ChL() {
 
       const promises = stocks.map(async (stock) => {
         try {
-          const apiBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
           const url = `${apiBase}/api/finance/${stock.symbol}`;
           console.log(`Fetching ${stock.symbol} from ${url}`);
           const response = await axios.get(url);
@@ -114,10 +111,10 @@ function Portfolio_ChL() {
         <div className="nav-buttons">
           <button onClick={() => navigate('/')} className="nav-button">Accueil</button>
           <button onClick={fetchPrices} className="nav-button">Actualiser</button>
-          <button onClick={() => navigate('/chl/charts')} className="nav-button">Graphiques</button>
+          <button onClick={() => navigate('/mel/charts')} className="nav-button">Graphiques</button>
         </div>
 
-        <h1 style={{ fontSize: '1.5rem', marginTop: '20px' }}>Portfolio ChL</h1>
+        <h1 style={{ fontSize: '1.5rem', marginTop: '20px' }}>Portfolio Mel</h1>
 
         {loading && <p>Chargement des données...</p>}
         {error && <p className="error">{error}</p>}
@@ -252,6 +249,33 @@ function Portfolio_ChL() {
                     )}
                   </td>
                 </tr>
+                <tr className="total-row" style={{ fontSize: '0.75rem', backgroundColor: '#2a3038' }}>
+                  <td colSpan="3">LIQUIDITÉS</td>
+                  <td style={{ color: '#2196f3' }}>4 042,50 EUR</td>
+                  <td style={{ color: '#2196f3' }}>4 042,50 EUR</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr className="total-row" style={{ fontSize: '0.8rem', backgroundColor: '#3a4048' }}>
+                  <td colSpan="3" style={{ fontWeight: 'bold' }}>TOTAL GÉNÉRAL</td>
+                  <td style={{ fontWeight: 'bold' }}>{formatNumber(getTotalBuyEUR() + 4042.50)} EUR</td>
+                  <td style={{ fontWeight: 'bold' }}>
+                    {getTotalCurrentEUR() && formatNumber(getTotalCurrentEUR() + 4042.50)} EUR
+                  </td>
+                  <td></td>
+                  <td className={getTotalCurrentEUR() && getTotalCurrentEUR() - getTotalBuyEUR() >= 0 ? 'positive' : 'negative'} style={{ fontWeight: 'bold' }}>
+                    {getTotalCurrentEUR() ? (
+                      <>
+                        <div>
+                          {getTotalCurrentEUR() - getTotalBuyEUR() >= 0 ? '+' : ''}
+                          {formatNumber(getTotalCurrentEUR() - getTotalBuyEUR())} EUR
+                        </div>
+                      </>
+                    ) : (
+                      <span className="error-text">N/A</span>
+                    )}
+                  </td>
+                </tr>
               </tbody>
             </table>
             <p style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '10px', textAlign: 'center' }}>
@@ -264,4 +288,4 @@ function Portfolio_ChL() {
   );
 }
 
-export default Portfolio_ChL;
+export default PortfolioMel;

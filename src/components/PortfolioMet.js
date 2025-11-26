@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
-function Portfolio_Met() {
+function PortfolioMet() {
   const navigate = useNavigate();
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,4 +204,4 @@ function Portfolio_Met() {
   );
 }
 
-export default Portfolio_Met;
+export default PortfolioMet;

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import './Graphiques_ETF.css';
+import './GraphiquesETF.css';
 
-function Graphiques_ChL() {
+function GraphiquesChL() {
   const navigate = useNavigate();
   const [chartsData, setChartsData] = useState({});
   const [portfolioData, setPortfolioData] = useState([]);
@@ -346,4 +346,4 @@ function Graphiques_ChL() {
   );
 }
 
-export default Graphiques_ChL;
+export default GraphiquesChL;

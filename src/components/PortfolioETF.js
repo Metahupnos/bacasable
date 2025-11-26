@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
-function Portfolio_ETF() {
+function PortfolioETF() {
   const navigate = useNavigate();
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,4 +197,4 @@ function Portfolio_ETF() {
   );
 }
 
-export default Portfolio_ETF;
+export default PortfolioETF;
