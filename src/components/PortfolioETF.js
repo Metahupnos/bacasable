@@ -98,6 +98,7 @@ function PortfolioETF() {
     <div className="App">
       <header className="App-header">
         <div className="nav-buttons">
+          <button onClick={() => navigate('/')} className="nav-button">Accueil</button>
           <button onClick={fetchPrices} className="nav-button">Actualiser</button>
           <button onClick={() => navigate('/etf/charts')} className="nav-button">Graphiques</button>
           <button onClick={() => navigate('/etf/sales')} className="nav-button">Ordres</button>
