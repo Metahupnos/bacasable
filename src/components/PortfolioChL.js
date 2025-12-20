@@ -10,15 +10,21 @@ function PortfolioChL() {
   const [error, setError] = useState(null);
   const [eurUsdRate, setEurUsdRate] = useState(null); // Taux EUR/USD
 
-  const liquidites = 195934.42;
+  // Liquidités restantes après achats (mis à jour 20/12/2025 - Rapport Bolero)
+  const liquidites = 23452.59; // EUR: 20,452.33 + USD: 3,513.30 (3,000.26 EUR)
 
-  // Données du portefeuille ChL - Actions US
+  // Données du portefeuille ChL - Actions US (mis à jour 20/12/2025 - Rapport Bolero)
+  // buyValueEUR calculé avec taux 0.8540 EUR/USD (543,587.34 EUR / 636,540.77 USD)
   const stocks = [
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 222, buyPriceUSD: 1109.94, buyValueEUR: 212823.18 },
-    { symbol: 'GOOGL', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 323.44, buyValueEUR: 97775.09 },
-    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', units: 75, buyPriceUSD: 787.32, buyValueEUR: 51001.04 },
-    { symbol: 'AVGO', name: 'Broadcom Inc.', units: 150, buyPriceUSD: 385.03, buyValueEUR: 49882.97 },
-    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 65, buyPriceUSD: 766.68, buyValueEUR: 43042.15 }
+    { symbol: 'RKLB', name: 'Rocket Lab Corporation', units: 2200, buyPriceUSD: 57.60097, buyValueEUR: 108225 },  // 126.722,13 USD
+    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 111, buyPriceUSD: 1032.06829, buyValueEUR: 97834 },  // 114.559,58 USD
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 292.85757, buyValueEUR: 87535 },  // 102.500,15 USD
+    { symbol: 'WDC', name: 'Western Digital Corp.', units: 400, buyPriceUSD: 163.44213, buyValueEUR: 55832 },  // 65.376,85 USD
+    { symbol: 'AMAT', name: 'Applied Materials Inc.', units: 240, buyPriceUSD: 251.98396, buyValueEUR: 51647 },  // 60.476,15 USD
+    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', units: 600, buyPriceEUR: 81.62, buyValueEUR: 48970.62, currency: 'EUR' },  // 48.970,62 EUR
+    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', units: 75, buyPriceUSD: 788.51893, buyValueEUR: 50505 },  // 59.138,92 USD
+    { symbol: 'AVGO', name: 'Broadcom Inc.', units: 150, buyPriceUSD: 386.45760, buyValueEUR: 49505 },  // 57.968,64 USD
+    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 65, buyPriceUSD: 766.12846, buyValueEUR: 42528 }  // 49.798,35 USD
   ];
 
   useEffect(() => {
@@ -59,7 +65,7 @@ function PortfolioChL() {
           return {
             ...stock,
             currentPrice: currentPrice,
-            currency: currency,
+            currency: stock.currency || currency,
             totalUSD: currentPrice * stock.units
           };
         } catch (err) {
@@ -86,11 +92,22 @@ function PortfolioChL() {
   };
 
   const getTotalCurrentUSD = () => {
-    return portfolio.reduce((sum, stock) => sum + (stock.totalUSD || 0), 0);
+    // Ne compte que les actions en USD
+    return portfolio.reduce((sum, stock) => {
+      if (stock.currency !== 'EUR') {
+        return sum + (stock.totalUSD || 0);
+      }
+      return sum;
+    }, 0);
   };
 
   const getTotalBuyUSD = () => {
-    return stocks.reduce((sum, stock) => sum + (stock.buyPriceUSD * stock.units), 0);
+    return stocks.reduce((sum, stock) => {
+      if (stock.buyPriceUSD) {
+        return sum + (stock.buyPriceUSD * stock.units);
+      }
+      return sum;
+    }, 0);
   };
 
   const getTotalBuyEUR = () => {
@@ -99,7 +116,15 @@ function PortfolioChL() {
 
   const getTotalCurrentEUR = () => {
     if (!eurUsdRate) return null;
-    return getTotalCurrentUSD() / eurUsdRate;
+    // Convertit USD en EUR + ajoute les actions déjà en EUR
+    const usdToEur = getTotalCurrentUSD() / eurUsdRate;
+    const eurStocks = portfolio.reduce((sum, stock) => {
+      if (stock.currency === 'EUR' && stock.currentPrice) {
+        return sum + (stock.currentPrice * stock.units);
+      }
+      return sum;
+    }, 0);
+    return usdToEur + eurStocks;
   };
 
   const formatNumber = (num) => {
@@ -117,6 +142,7 @@ function PortfolioChL() {
           <button onClick={() => navigate('/')} className="nav-button">Accueil</button>
           <button onClick={fetchPrices} className="nav-button">Actualiser</button>
           <button onClick={() => navigate('/chl/charts')} className="nav-button">Graphiques</button>
+          <button onClick={() => navigate('/etf/sales')} className="nav-button">Ordres</button>
         </div>
 
         <h1 style={{ fontSize: '1.5rem', marginTop: '20px' }}>
@@ -147,11 +173,21 @@ function PortfolioChL() {
               </thead>
               <tbody>
                 {portfolio.map((stock, index) => {
-                  const diffUSD = stock.currentPrice ? (stock.currentPrice - stock.buyPriceUSD) * stock.units : null;
-                  const diffPercent = stock.currentPrice ? ((stock.currentPrice - stock.buyPriceUSD) / stock.buyPriceUSD * 100) : null;
-                  const totalCurrentEUR = stock.totalUSD && eurUsdRate ? stock.totalUSD / eurUsdRate : null;
-                  const diffEUR = totalCurrentEUR ? totalCurrentEUR - stock.buyValueEUR : null;
-                  const diffPercentEUR = diffEUR ? (diffEUR / stock.buyValueEUR * 100) : null;
+                  // Gestion spéciale pour les titres en EUR (G2X.DE)
+                  const buyPrice = stock.buyPriceEUR || stock.buyPriceUSD;
+                  const isEUR = stock.currency === 'EUR';
+
+                  const diffUSD = stock.currentPrice && !isEUR ? (stock.currentPrice - stock.buyPriceUSD) * stock.units : null;
+                  const diffPercent = stock.currentPrice && buyPrice ? ((stock.currentPrice - buyPrice) / buyPrice * 100) : null;
+
+                  const totalCurrentEUR = isEUR && stock.currentPrice
+                    ? stock.currentPrice * stock.units
+                    : (stock.totalUSD && eurUsdRate ? stock.totalUSD / eurUsdRate : null);
+
+                  const diffEUR = totalCurrentEUR && stock.buyValueEUR
+                    ? totalCurrentEUR - stock.buyValueEUR
+                    : null;
+                  const diffPercentEUR = diffEUR && stock.buyValueEUR ? (diffEUR / stock.buyValueEUR * 100) : null;
                   const portfolioPercent = stock.totalUSD && getTotalCurrentUSD() > 0 ? (stock.totalUSD / getTotalCurrentUSD() * 100) : null;
 
                   return (
@@ -159,7 +195,7 @@ function PortfolioChL() {
                       <td className="etf-name">
                         <div>{stock.name}</div>
                         <a
-                          href={`https://finance.yahoo.com/quote/${stock.symbol}`}
+                          href={`https://finance.yahoo.com/quote/${stock.symbol}/analysis/`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="etf-symbol-link"
@@ -168,9 +204,9 @@ function PortfolioChL() {
                         </a>
                       </td>
                       <td className="etf-sell-price">
-                        {formatNumber(stock.buyPriceUSD)}
+                        {formatNumber(buyPrice)}
                       </td>
-                      <td className={`etf-price ${stock.currentPrice && stock.currentPrice > stock.buyPriceUSD ? 'price-higher' : 'price-lower'}`}>
+                      <td className={`etf-price ${stock.currentPrice && stock.currentPrice > buyPrice ? 'price-higher' : 'price-lower'}`}>
                         {stock.currentPrice ? (
                           formatNumber(stock.currentPrice)
                         ) : (
@@ -181,12 +217,12 @@ function PortfolioChL() {
                         {formatNumber(stock.buyValueEUR)}
                       </td>
                       <td className="etf-total">
-                        {stock.totalUSD ? (
+                        {stock.totalUSD || (isEUR && totalCurrentEUR) ? (
                           <>
-                            <div>{formatNumber(stock.totalUSD)} USD</div>
-                            {totalCurrentEUR && (
+                            <div>{formatNumber(totalCurrentEUR)} EUR</div>
+                            {!isEUR && stock.totalUSD && (
                               <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
-                                {formatNumber(totalCurrentEUR)} EUR
+                                {formatNumber(stock.totalUSD)} USD
                               </div>
                             )}
                           </>
@@ -194,8 +230,10 @@ function PortfolioChL() {
                           <span className="error-text">N/A</span>
                         )}
                       </td>
-                      <td className={diffUSD && diffUSD >= 0 ? 'positive' : 'negative'}>
-                        {diffUSD !== null ? (
+                      <td className={isEUR ? '' : (diffUSD && diffUSD >= 0 ? 'positive' : 'negative')}>
+                        {isEUR ? (
+                          <div style={{ color: '#9fa3a8' }}>N/A</div>
+                        ) : diffUSD !== null ? (
                           <>
                             <div>{diffUSD >= 0 ? '+' : ''}{formatNumber(diffUSD)}</div>
                             <div style={{ fontSize: '0.7rem', marginTop: '2px' }}>
@@ -283,7 +321,7 @@ function PortfolioChL() {
               </tbody>
             </table>
             <p style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '10px', textAlign: 'center' }}>
-              * Prix d'achat via Bolero en USD | Taux EUR/USD actuel : {eurUsdRate ? eurUsdRate.toFixed(4) : 'N/A'}
+              * Prix d'achat incluent frais et impôts | Taux EUR/USD actuel : {eurUsdRate ? eurUsdRate.toFixed(4) : 'N/A'}
             </p>
           </>
         )}
