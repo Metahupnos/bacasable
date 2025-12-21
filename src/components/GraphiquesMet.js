@@ -54,14 +54,6 @@ function GraphiquesMet() {
     }).filter(item => item.price !== null);
   };
 
-  const calculatePerformance = (data) => {
-    if (!data || data.length < 2) return null;
-    const firstPrice = data[0].price;
-    const lastPrice = data[data.length - 1].price;
-    if (!firstPrice || !lastPrice) return null;
-    return ((lastPrice - firstPrice) / firstPrice * 100).toFixed(2);
-  };
-
   const fetchHistoricalData = async () => {
     try {
       setLoading(true);
