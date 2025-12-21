@@ -375,18 +375,38 @@ function GraphiquesMel() {
                 }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
-              {stocks.map((stock) => (
-                <Line
-                  key={stock.symbol}
-                  type="monotone"
-                  dataKey={stock.symbol}
-                  stroke={stock.color}
-                  strokeWidth={2}
-                  dot={false}
-                  name={stock.symbol}
-                  connectNulls={false}
-                />
-              ))}
+              {stocks.map((stock) => {
+                const [year, month, day] = stock.buyDate.split('-');
+                const buyDateStr = `${day}/${month}/${year}`;
+                return (
+                  <Line
+                    key={stock.symbol}
+                    type="monotone"
+                    dataKey={stock.symbol}
+                    stroke={stock.color}
+                    strokeWidth={2}
+                    dot={(props) => {
+                      const { cx, cy, payload } = props;
+                      if (payload.date === buyDateStr && payload[stock.symbol] !== undefined) {
+                        return (
+                          <circle
+                            key={`buy-${stock.symbol}`}
+                            cx={cx}
+                            cy={cy}
+                            r={5}
+                            fill={stock.color}
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                          />
+                        );
+                      }
+                      return null;
+                    }}
+                    name={stock.symbol}
+                    connectNulls={false}
+                  />
+                );
+              })}
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -416,46 +436,73 @@ function GraphiquesMel() {
             {(() => {
               const lastPrice = chartData.data[chartData.data.length - 1]?.price;
               const totalPerf = lastPrice ? ((lastPrice - stock.buyPrice) / stock.buyPrice * 100).toFixed(2) : null;
+              const perfAmount = lastPrice ? (lastPrice - stock.buyPrice) * stock.units : null;
               return (
                 <div style={{ fontSize: '0.75rem', color: '#9fa3a8', marginBottom: '5px', display: 'flex', justifyContent: 'space-between' }}>
                   <span>Achat: {stock.buyDate.split('-').reverse().join('/')} @ {stock.buyPrice.toLocaleString('fr-FR')} USD</span>
                   {totalPerf && (
-                    <span style={{ color: parseFloat(totalPerf) >= 0 ? '#4caf50' : '#f44336', fontWeight: 'bold' }}>
-                      Rendement depuis achat: {parseFloat(totalPerf) >= 0 ? '+' : ''}{totalPerf}%
+                    <span style={{ color: parseFloat(totalPerf) >= 0 ? '#4caf50' : '#f44336', fontWeight: 'bold', textAlign: 'right' }}>
+                      <div>Rendement depuis achat: {parseFloat(totalPerf) >= 0 ? '+' : ''}{totalPerf}%</div>
+                      <div style={{ fontSize: '0.7rem' }}>{perfAmount >= 0 ? '+' : ''}{perfAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</div>
                     </span>
                   )}
                 </div>
               );
             })()}
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData.data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
-                <XAxis
-                  dataKey={isIntradayPeriod ? "datetime" : "date"}
-                  stroke="#9fa3a8"
-                  tick={{ fontSize: 12 }}
-                  interval="preserveStartEnd"
-                  tickFormatter={(value, index) => {
-                    if (isOneDayPeriod) {
-                      const parts = value.split(' ');
-                      return parts[1] || value;
-                    }
-                    const tickInterval = Math.floor(chartData.data.length / 6);
-                    if (index % tickInterval === 0 || index === chartData.data.length - 1) {
-                      return isIntradayPeriod ? value.split(' ')[0] : value;
-                    }
-                    return '';
-                  }}
-                />
-                <YAxis stroke="#9fa3a8" tick={{ fontSize: 12 }} domain={['auto', 'auto']} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1e2228', border: '1px solid #61dafb', borderRadius: '4px' }}
-                  labelStyle={{ color: '#61dafb' }}
-                  itemStyle={{ color: stock.color }}
-                />
-                <Line type="monotone" dataKey="price" stroke={stock.color} strokeWidth={2} dot={false} name="Prix (USD)" />
-              </LineChart>
-            </ResponsiveContainer>
+            {(() => {
+              const [year, month, day] = stock.buyDate.split('-');
+              const buyDateStr = `${day}/${month}/${year}`;
+              const dataWithBuyPoint = chartData.data.map(item => ({
+                ...item,
+                buyPrice: item.date === buyDateStr ? stock.buyPrice : null
+              }));
+              return (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={dataWithBuyPoint}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
+                    <XAxis
+                      dataKey={isIntradayPeriod ? "datetime" : "date"}
+                      stroke="#9fa3a8"
+                      tick={{ fontSize: 12 }}
+                      interval="preserveStartEnd"
+                      tickFormatter={(value, index) => {
+                        if (isOneDayPeriod) {
+                          const parts = value.split(' ');
+                          return parts[1] || value;
+                        }
+                        const tickInterval = Math.floor(chartData.data.length / 6);
+                        if (index % tickInterval === 0 || index === chartData.data.length - 1) {
+                          return isIntradayPeriod ? value.split(' ')[0] : value;
+                        }
+                        return '';
+                      }}
+                    />
+                    <YAxis stroke="#9fa3a8" tick={{ fontSize: 12 }} domain={['auto', 'auto']} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#1e2228', border: '1px solid #61dafb', borderRadius: '4px' }}
+                      labelStyle={{ color: '#61dafb' }}
+                      itemStyle={{ color: stock.color }}
+                      formatter={(value, name) => {
+                        if (name === 'buyPrice' && value) {
+                          return [`${value.toLocaleString('fr-FR')} USD`, 'Prix achat'];
+                        }
+                        return [`${value?.toLocaleString('fr-FR')} USD`, 'Prix'];
+                      }}
+                    />
+                    <Line type="monotone" dataKey="price" stroke={stock.color} strokeWidth={2} dot={false} name="Prix" />
+                    <Line
+                      type="monotone"
+                      dataKey="buyPrice"
+                      stroke="#ffffff"
+                      strokeWidth={0}
+                      dot={{ r: 6, fill: '#ffeb3b', stroke: '#ffffff', strokeWidth: 2 }}
+                      name="buyPrice"
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              );
+            })()}
           </div>
         );
       })}

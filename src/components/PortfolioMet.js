@@ -12,13 +12,14 @@ function PortfolioMet() {
 
   const liquidites = 5772.47;
 
-  // Données du portefeuille Met - Actions US
+  // Données du portefeuille Met - Actions US (mis à jour 21/12/2025 - Rapport Bolero)
+  // Total achat: 91,195.00 USD = 77,877.88 EUR
   const stocks = [
-    { symbol: 'AVGO', name: 'Broadcom Inc.', units: 60, buyPriceUSD: 385.03, buyValueEUR: 19944.57 },
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 20, buyPriceUSD: 1109.94, buyValueEUR: 19164.98 },
-    { symbol: 'GOOGL', name: 'Alphabet Inc. (Class A)', units: 57, buyPriceUSD: 323.44, buyValueEUR: 15916.50 },
-    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 18, buyPriceUSD: 766.68, buyValueEUR: 11914.22 },
-    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', units: 17, buyPriceUSD: 787.32, buyValueEUR: 11555.24 }
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 57, buyPriceUSD: 323.89877, buyValueEUR: 15770.78 },
+    { symbol: 'AVGO', name: 'Broadcom Inc.', units: 60, buyPriceUSD: 385.89617, buyValueEUR: 19773.32 },
+    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 20, buyPriceUSD: 1113.98900, buyValueEUR: 19026.93 },
+    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 18, buyPriceUSD: 770.52167, buyValueEUR: 11844.50 },
+    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', units: 17, buyPriceUSD: 789.99000, buyValueEUR: 11469.07 }
   ];
 
   useEffect(() => {
@@ -123,7 +124,7 @@ function PortfolioMet() {
                     <tr key={index}>
                       <td className="etf-name">
                         <div>{stock.name}</div>
-                        <a href={`https://finance.yahoo.com/quote/${stock.symbol}`} target="_blank" rel="noopener noreferrer" className="etf-symbol-link">
+                        <a href={`https://finance.yahoo.com/quote/${stock.symbol}/analysis/`} target="_blank" rel="noopener noreferrer" className="etf-symbol-link">
                           {stock.symbol} ({stock.units} unités) {portfolioPercent !== null && <span style={{ color: '#61dafb' }}>• {portfolioPercent.toFixed(1)}%</span>}
                         </a>
                       </td>
