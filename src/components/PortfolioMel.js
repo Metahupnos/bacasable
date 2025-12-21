@@ -119,7 +119,7 @@ function PortfolioMel() {
           Portfolio Mel
           {!loading && getTotalCurrentEUR() && (
             <span style={{ fontSize: '1rem', color: '#61dafb', marginLeft: '10px' }}>
-              ({formatNumber(getTotalCurrentEUR() + 4042.50)} EUR)
+              ({formatNumber(getTotalCurrentEUR() + 6639.30)} EUR)
             </span>
           )}
         </h1>
@@ -260,16 +260,16 @@ function PortfolioMel() {
                 </tr>
                 <tr className="total-row" style={{ fontSize: '0.75rem', backgroundColor: '#2a3038' }}>
                   <td colSpan="3">LIQUIDITÉS</td>
-                  <td style={{ color: '#2196f3' }}>4 042,50 EUR</td>
-                  <td style={{ color: '#2196f3' }}>4 042,50 EUR</td>
+                  <td style={{ color: '#2196f3' }}>6 639,30 EUR</td>
+                  <td style={{ color: '#2196f3' }}>6 639,30 EUR</td>
                   <td></td>
                   <td></td>
                 </tr>
                 <tr className="total-row" style={{ fontSize: '0.8rem', backgroundColor: '#3a4048' }}>
                   <td colSpan="3" style={{ fontWeight: 'bold' }}>TOTAL GÉNÉRAL</td>
-                  <td style={{ fontWeight: 'bold' }}>{formatNumber(getTotalBuyEUR() + 4042.50)} EUR</td>
+                  <td style={{ fontWeight: 'bold' }}>{formatNumber(getTotalBuyEUR() + 6639.30)} EUR</td>
                   <td style={{ fontWeight: 'bold' }}>
-                    {getTotalCurrentEUR() && formatNumber(getTotalCurrentEUR() + 4042.50)} EUR
+                    {getTotalCurrentEUR() && formatNumber(getTotalCurrentEUR() + 6639.30)} EUR
                   </td>
                   <td></td>
                   <td className={getTotalCurrentEUR() && getTotalCurrentEUR() - getTotalBuyEUR() >= 0 ? 'positive' : 'negative'} style={{ fontWeight: 'bold' }}>
