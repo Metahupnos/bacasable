@@ -10,11 +10,12 @@ function PortfolioMel() {
   const [error, setError] = useState(null);
   const [eurUsdRate, setEurUsdRate] = useState(null);
 
-  // Données du portefeuille Mel - Actions US
+  // Données du portefeuille Mel - Actions US (mis à jour 21/12/2025 - Rapport Bolero)
+  // Total achat: 226,425.38 USD = 193,360.70 EUR
   const stocks = [
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 146, buyPriceUSD: 1109.94, buyValueEUR: 139892.30 },
-    { symbol: 'GOOGL', name: 'Alphabet Inc. (Class A)', units: 135, buyPriceUSD: 323.44, buyValueEUR: 37693.72 },
-    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 42, buyPriceUSD: 766.68, buyValueEUR: 27797.44 }
+    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 146, buyPriceUSD: 1031.28192, buyValueEUR: 150567.16 },
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 135, buyPriceUSD: 322.33785, buyValueEUR: 43515.61 },
+    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 42, buyPriceUSD: 770.06214, buyValueEUR: 32342.61 }
   ];
 
   useEffect(() => {
@@ -154,7 +155,7 @@ function PortfolioMel() {
                       <td className="etf-name">
                         <div>{stock.name}</div>
                         <a
-                          href={`https://finance.yahoo.com/quote/${stock.symbol}`}
+                          href={`https://finance.yahoo.com/quote/${stock.symbol}/analysis/`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="etf-symbol-link"
