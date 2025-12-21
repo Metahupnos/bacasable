@@ -12,9 +12,14 @@ function GraphiquesChL() {
   const [error, setError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('1m');
 
+  // Mis à jour 20/12/2025 - Rapport Bolero
   const stocks = [
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', color: '#4caf50', units: 222 },
-    { symbol: 'GOOGL', name: 'Alphabet Inc. (Class A)', color: '#2196f3', units: 350 },
+    { symbol: 'RKLB', name: 'Rocket Lab Corporation', color: '#e91e63', units: 2200 },
+    { symbol: 'LLY', name: 'Eli Lilly and Co.', color: '#4caf50', units: 111 },
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', color: '#2196f3', units: 350 },
+    { symbol: 'WDC', name: 'Western Digital Corp.', color: '#00bcd4', units: 400 },
+    { symbol: 'AMAT', name: 'Applied Materials Inc.', color: '#8bc34a', units: 240 },
+    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', color: '#ffc107', units: 600, currency: 'EUR' },
     { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', color: '#ff9800', units: 75 },
     { symbol: 'AVGO', name: 'Broadcom Inc.', color: '#9c27b0', units: 150 },
     { symbol: 'IDXX', name: 'Idexx Laboratories', color: '#f44336', units: 65 }
@@ -285,7 +290,7 @@ function GraphiquesChL() {
           <div key={stock.symbol} className="chart-section">
             <h2>
               {stock.name} (
-              <a href={`https://finance.yahoo.com/quote/${stock.symbol}`} target="_blank" rel="noopener noreferrer" className="etf-chart-link">
+              <a href={`https://finance.yahoo.com/quote/${stock.symbol}/analysis/`} target="_blank" rel="noopener noreferrer" className="etf-chart-link">
                 {stock.symbol}
               </a>
               )
