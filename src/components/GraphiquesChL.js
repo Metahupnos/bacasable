@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, Legend } from 'recharts';
 import './GraphiquesETF.css';
 
 function GraphiquesChL() {
@@ -12,18 +12,20 @@ function GraphiquesChL() {
   const [error, setError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('1m');
 
-  // Mis à jour 20/12/2025 - Rapport Bolero
+  // Mis à jour 20/12/2025 - Rapport Bolero (avec dates et prix d'achat)
   const stocks = [
-    { symbol: 'RKLB', name: 'Rocket Lab Corporation', color: '#e91e63', units: 2200 },
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', color: '#4caf50', units: 111 },
-    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', color: '#2196f3', units: 350 },
-    { symbol: 'WDC', name: 'Western Digital Corp.', color: '#00bcd4', units: 400 },
-    { symbol: 'AMAT', name: 'Applied Materials Inc.', color: '#8bc34a', units: 240 },
-    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', color: '#ffc107', units: 600, currency: 'EUR' },
-    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', color: '#ff9800', units: 75 },
-    { symbol: 'AVGO', name: 'Broadcom Inc.', color: '#9c27b0', units: 150 },
-    { symbol: 'IDXX', name: 'Idexx Laboratories', color: '#f44336', units: 65 }
+    { symbol: 'RKLB', name: 'Rocket Lab Corporation', color: '#e91e63', units: 2200, buyPrice: 57.60, buyDate: '2025-12-08' },
+    { symbol: 'LLY', name: 'Eli Lilly and Co.', color: '#4caf50', units: 111, buyPrice: 1032.07, buyDate: '2025-11-17' },
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', color: '#2196f3', units: 350, buyPrice: 292.86, buyDate: '2025-11-20' },
+    { symbol: 'WDC', name: 'Western Digital Corp.', color: '#00bcd4', units: 400, buyPrice: 163.44, buyDate: '2025-11-28' },
+    { symbol: 'AMAT', name: 'Applied Materials Inc.', color: '#8bc34a', units: 240, buyPrice: 251.98, buyDate: '2025-11-28' },
+    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', color: '#ffc107', units: 600, currency: 'EUR', buyPrice: 81.62, buyDate: '2025-12-01' },
+    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', color: '#ff9800', units: 75, buyPrice: 788.52, buyDate: '2025-11-25' },
+    { symbol: 'AVGO', name: 'Broadcom Inc.', color: '#9c27b0', units: 150, buyPrice: 386.46, buyDate: '2025-11-25' },
+    { symbol: 'IDXX', name: 'Idexx Laboratories', color: '#f44336', units: 65, buyPrice: 766.13, buyDate: '2025-11-25' }
   ];
+
+  const [combinedData, setCombinedData] = useState([]);
 
   const periods = [
     { value: '1d', label: '1J' },
@@ -32,7 +34,8 @@ function GraphiquesChL() {
     { value: '3m', label: '3M' },
     { value: '6m', label: '6M' },
     { value: '1y', label: '1Y' },
-    { value: '2y', label: '2Y' }
+    { value: '2y', label: '2Y' },
+    { value: '5y', label: '5Y' }
   ];
 
   const isIntradayPeriod = ['1d', '5d'].includes(selectedPeriod);
@@ -118,6 +121,7 @@ function GraphiquesChL() {
       });
       setChartsData(dataMap);
       calculatePortfolioTotal(results);
+      calculateCombinedPerformance(results);
       setError(null);
     } catch (err) {
       console.error('Erreur générale:', err);
@@ -176,6 +180,100 @@ function GraphiquesChL() {
     setPortfolioData(portfolioValues);
   };
 
+  // Calcul des performances combinées (normalisées en % depuis date d'achat)
+  const calculateCombinedPerformance = (results) => {
+    // Utiliser uniquement les dates (pas les timestamps exacts) pour éviter les problèmes d'alignement
+    const allDates = new Set();
+    const pricesByDate = {};
+
+    // Collecter tous les prix par date pour chaque action
+    results.forEach(result => {
+      pricesByDate[result.symbol] = {};
+      result.data.forEach(item => {
+        allDates.add(item.date);
+        // Garder le dernier prix de la journée
+        pricesByDate[result.symbol][item.date] = item.price;
+      });
+    });
+
+    // Trier les dates chronologiquement
+    const sortedDates = Array.from(allDates).sort((a, b) => {
+      const [dayA, monthA, yearA] = a.split('/');
+      const [dayB, monthB, yearB] = b.split('/');
+      return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
+    });
+
+    // Convertir les dates d'achat en format fr-FR
+    const buyDatesStr = {};
+    stocks.forEach(stock => {
+      const [year, month, day] = stock.buyDate.split('-');
+      buyDatesStr[stock.symbol] = `${day}/${month}/${year}`;
+    });
+
+    // Tracker le dernier prix connu et si on a dépassé la date d'achat
+    const lastKnownPrices = {};
+    const hasStarted = {};
+    stocks.forEach(stock => {
+      lastKnownPrices[stock.symbol] = null;
+      hasStarted[stock.symbol] = false;
+    });
+
+    const combined = sortedDates.map(dateStr => {
+      const dataPoint = {
+        date: dateStr
+      };
+
+      stocks.forEach(stock => {
+        // Mettre à jour le dernier prix connu si on a un prix pour cette date
+        if (pricesByDate[stock.symbol][dateStr]) {
+          lastKnownPrices[stock.symbol] = pricesByDate[stock.symbol][dateStr];
+        }
+
+        // Vérifier si on a atteint ou dépassé la date d'achat
+        const [day, month, year] = dateStr.split('/');
+        const [buyDay, buyMonth, buyYear] = buyDatesStr[stock.symbol].split('/');
+        const currentDate = new Date(year, month - 1, day);
+        const buyDate = new Date(buyYear, buyMonth - 1, buyDay);
+
+        if (currentDate >= buyDate) {
+          hasStarted[stock.symbol] = true;
+        }
+
+        const currentPrice = lastKnownPrices[stock.symbol];
+        const buyPrice = stock.buyPrice;
+
+        // Calculer le % par rapport au prix d'achat
+        if (currentPrice && buyPrice && hasStarted[stock.symbol]) {
+          const perf = parseFloat(((currentPrice - buyPrice) / buyPrice * 100).toFixed(2));
+          dataPoint[stock.symbol] = perf;
+        }
+      });
+
+      return dataPoint;
+    }).filter(item => {
+      return stocks.some(stock => item[stock.symbol] !== undefined);
+    });
+
+    setCombinedData(combined);
+  };
+
+  // Trouver le point d'achat dans les données du graphique
+  const findBuyPoint = (chartData, buyDate, buyPrice) => {
+    if (!chartData || chartData.length === 0) return null;
+
+    // Convertir sans parsing Date pour éviter timezone issues
+    const [year, month, day] = buyDate.split('-');
+    const buyDateStr = `${day}/${month}/${year}`;
+
+    // Chercher le point le plus proche de la date d'achat
+    const buyPoint = chartData.find(item => item.date === buyDateStr);
+
+    if (buyPoint) {
+      return { date: buyPoint.date, datetime: buyPoint.datetime, price: buyPrice };
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="charts-container">
@@ -221,24 +319,22 @@ function GraphiquesChL() {
           <h2>
             Portfolio ChL (USD)
             {(() => {
-              const perf = calculatePerformance(portfolioData.map(d => ({ price: d.value })));
-              if (perf !== null && portfolioData.length > 0) {
-                const perfNum = parseFloat(perf);
-                const firstValue = portfolioData[0].value;
-                const lastValue = portfolioData[portfolioData.length - 1].value;
-                const perfAmount = lastValue - firstValue;
-                return (
-                  <span style={{ float: 'right', textAlign: 'right' }}>
-                    <div style={{ fontSize: '1rem', color: perfNum >= 0 ? '#4caf50' : '#ff6b6b' }}>
-                      {perfNum >= 0 ? '+' : ''}{perf}%
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: perfNum >= 0 ? '#4caf50' : '#ff6b6b', marginTop: '2px' }}>
-                      {perfNum >= 0 ? '+' : ''}{perfAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-                    </div>
-                  </span>
-                );
-              }
-              return null;
+              // Calcul du rendement total depuis achat
+              const totalBuyValue = stocks.reduce((sum, stock) => sum + (stock.buyPrice * stock.units), 0);
+              const lastValue = portfolioData[portfolioData.length - 1]?.value || 0;
+              const totalPerf = ((lastValue - totalBuyValue) / totalBuyValue * 100).toFixed(2);
+              const perfNum = parseFloat(totalPerf);
+              const perfAmount = lastValue - totalBuyValue;
+              return (
+                <span style={{ float: 'right', textAlign: 'right' }}>
+                  <div style={{ fontSize: '1rem', color: perfNum >= 0 ? '#4caf50' : '#f44336' }}>
+                    Rendement depuis achat: {perfNum >= 0 ? '+' : ''}{totalPerf}%
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: perfNum >= 0 ? '#4caf50' : '#f44336', marginTop: '2px' }}>
+                    {perfNum >= 0 ? '+' : ''}{perfAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                  </div>
+                </span>
+              );
             })()}
           </h2>
           <ResponsiveContainer width="100%" height={250}>
@@ -274,6 +370,89 @@ function GraphiquesChL() {
         </div>
       )}
 
+      {/* Graphique combiné - Toutes les actions en % depuis achat */}
+      {combinedData.length > 0 && (
+        <div className="chart-section portfolio-total-section">
+          <h2>Performance depuis achat (%)</h2>
+          {/* Affichage des performances finales */}
+          <div style={{ fontSize: '0.75rem', marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+            {stocks.map(stock => {
+              const lastPoint = combinedData[combinedData.length - 1];
+              const perf = lastPoint ? lastPoint[stock.symbol] : null;
+              return perf !== undefined && perf !== null ? (
+                <span key={stock.symbol} style={{ color: perf >= 0 ? '#4caf50' : '#f44336' }}>
+                  {stock.symbol}: {perf >= 0 ? '+' : ''}{perf}%
+                </span>
+              ) : null;
+            })}
+          </div>
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={combinedData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
+              <XAxis
+                dataKey={isIntradayPeriod ? "datetime" : "date"}
+                stroke="#9fa3a8"
+                tick={{ fontSize: 10 }}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                stroke="#9fa3a8"
+                tick={{ fontSize: 12 }}
+                domain={['auto', 'auto']}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#1e2228', border: '1px solid #61dafb', borderRadius: '4px' }}
+                labelStyle={{ color: '#61dafb' }}
+                formatter={(value, name) => {
+                  if (value !== null && value !== undefined) {
+                    const color = value >= 0 ? '#4caf50' : '#f44336';
+                    return [<span style={{ color }}>{value >= 0 ? '+' : ''}{value}%</span>, name];
+                  }
+                  return [null, null];
+                }}
+              />
+              <Legend wrapperStyle={{ paddingTop: '10px' }} />
+              {stocks.map((stock) => {
+                // Trouver le premier point (date d'achat) pour ce stock
+                const [year, month, day] = stock.buyDate.split('-');
+                const buyDateStr = `${day}/${month}/${year}`;
+
+                return (
+                  <Line
+                    key={stock.symbol}
+                    type="monotone"
+                    dataKey={stock.symbol}
+                    stroke={stock.color}
+                    strokeWidth={2}
+                    dot={(props) => {
+                      const { cx, cy, payload } = props;
+                      // Afficher un point à la date d'achat (premier point de la courbe)
+                      if (payload.date === buyDateStr && payload[stock.symbol] !== undefined) {
+                        return (
+                          <circle
+                            key={`buy-${stock.symbol}`}
+                            cx={cx}
+                            cy={cy}
+                            r={5}
+                            fill={stock.color}
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                          />
+                        );
+                      }
+                      return null;
+                    }}
+                    name={stock.symbol}
+                    connectNulls={false}
+                  />
+                );
+              })}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
       {/* Graphiques individuels */}
       {stocks.map((stock) => {
         const chartData = chartsData[stock.symbol];
@@ -285,6 +464,15 @@ function GraphiquesChL() {
             </div>
           );
         }
+
+        // Trouver le point d'achat dans les données
+        const buyPoint = findBuyPoint(chartData.data, stock.buyDate, stock.buyPrice);
+
+        // Ajouter le point d'achat aux données si trouvé
+        const dataWithBuyPoint = buyPoint ? chartData.data.map(item => ({
+          ...item,
+          buyPrice: item.date === buyPoint.date ? stock.buyPrice : null
+        })) : chartData.data;
 
         return (
           <div key={stock.symbol} className="chart-section">
@@ -315,8 +503,22 @@ function GraphiquesChL() {
                 return null;
               })()}
             </h2>
+            {(() => {
+              const lastPrice = chartData.data[chartData.data.length - 1]?.price;
+              const totalPerf = lastPrice ? ((lastPrice - stock.buyPrice) / stock.buyPrice * 100).toFixed(2) : null;
+              return (
+                <div style={{ fontSize: '0.75rem', color: '#9fa3a8', marginBottom: '5px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Achat: {stock.buyDate.split('-').reverse().join('/')} @ {stock.buyPrice.toLocaleString('fr-FR')} {stock.currency || 'USD'}</span>
+                  {totalPerf && (
+                    <span style={{ color: parseFloat(totalPerf) >= 0 ? '#4caf50' : '#f44336', fontWeight: 'bold' }}>
+                      Rendement depuis achat: {parseFloat(totalPerf) >= 0 ? '+' : ''}{totalPerf}%
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData.data}>
+              <LineChart data={dataWithBuyPoint}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
                 <XAxis
                   dataKey={isIntradayPeriod ? "datetime" : "date"}
@@ -340,8 +542,25 @@ function GraphiquesChL() {
                   contentStyle={{ backgroundColor: '#1e2228', border: '1px solid #61dafb', borderRadius: '4px' }}
                   labelStyle={{ color: '#61dafb' }}
                   itemStyle={{ color: stock.color }}
+                  formatter={(value, name) => {
+                    if (name === 'buyPrice' && value) {
+                      return [`${value.toLocaleString('fr-FR')} ${stock.currency || 'USD'}`, 'Prix achat'];
+                    }
+                    return [`${value?.toLocaleString('fr-FR')} ${stock.currency || 'USD'}`, 'Prix'];
+                  }}
                 />
-                <Line type="monotone" dataKey="price" stroke={stock.color} strokeWidth={2} dot={false} name="Prix (USD)" />
+                <Line type="monotone" dataKey="price" stroke={stock.color} strokeWidth={2} dot={false} name="Prix" />
+                {buyPoint && (
+                  <Line
+                    type="monotone"
+                    dataKey="buyPrice"
+                    stroke="#ffffff"
+                    strokeWidth={0}
+                    dot={{ r: 6, fill: '#ffeb3b', stroke: '#ffffff', strokeWidth: 2 }}
+                    name="buyPrice"
+                    isAnimationActive={false}
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
