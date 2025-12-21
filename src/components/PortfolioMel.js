@@ -11,11 +11,11 @@ function PortfolioMel() {
   const [eurUsdRate, setEurUsdRate] = useState(null);
 
   // Données du portefeuille Mel - Actions US (mis à jour 21/12/2025 - Rapport Bolero)
-  // Total achat: 226,425.38 USD = 193,360.70 EUR
+  // Total achat: 226,425.38 USD = 193,360.70 EUR (taux 0.8539335)
   const stocks = [
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 146, buyPriceUSD: 1031.28192, buyValueEUR: 150567.16 },
-    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 135, buyPriceUSD: 322.33785, buyValueEUR: 43515.61 },
-    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 42, buyPriceUSD: 770.06214, buyValueEUR: 32342.61 }
+    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 146, buyPriceUSD: 1031.28192, buyValueEUR: 128577.47 },
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 135, buyPriceUSD: 322.33785, buyValueEUR: 37160.42 },
+    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 42, buyPriceUSD: 770.06214, buyValueEUR: 27622.81 }
   ];
 
   useEffect(() => {
@@ -179,10 +179,10 @@ function PortfolioMel() {
                       <td className="etf-total">
                         {stock.totalUSD ? (
                           <>
-                            <div>{formatNumber(stock.totalUSD)} USD</div>
-                            {totalCurrentEUR && (
+                            <div>{formatNumber(totalCurrentEUR)} EUR</div>
+                            {stock.totalUSD && (
                               <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
-                                {formatNumber(totalCurrentEUR)} EUR
+                                {formatNumber(stock.totalUSD)} USD
                               </div>
                             )}
                           </>

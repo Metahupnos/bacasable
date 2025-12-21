@@ -136,8 +136,8 @@ function PortfolioMet() {
                       <td className="etf-total">
                         {stock.totalUSD ? (
                           <>
-                            <div>{formatNumber(stock.totalUSD)} USD</div>
-                            {totalCurrentEUR && <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>{formatNumber(totalCurrentEUR)} EUR</div>}
+                            <div>{formatNumber(totalCurrentEUR)} EUR</div>
+                            {stock.totalUSD && <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>{formatNumber(stock.totalUSD)} USD</div>}
                           </>
                         ) : <span className="error-text">N/A</span>}
                       </td>
