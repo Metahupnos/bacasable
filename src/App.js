@@ -10,6 +10,14 @@ import PortfolioMel from './components/PortfolioMel';
 import GraphiquesMel from './components/GraphiquesMel';
 import PortfolioMet from './components/PortfolioMet';
 import GraphiquesMet from './components/GraphiquesMet';
+import PortfolioHealthcare from './components/PortfolioHealthcare';
+import GraphiquesHealthcare from './components/GraphiquesHealthcare';
+import PortfolioBasicMaterials from './components/PortfolioBasicMaterials';
+import GraphiquesBasicMaterials from './components/GraphiquesBasicMaterials';
+import PortfolioIndustrials from './components/PortfolioIndustrials';
+import GraphiquesIndustrials from './components/GraphiquesIndustrials';
+import PortfolioTechnology from './components/PortfolioTechnology';
+import GraphiquesTechnology from './components/GraphiquesTechnology';
 import './App.css';
 
 function App() {
@@ -30,6 +38,18 @@ function App() {
         {/* Portfolio Met */}
         <Route path="/met" element={<PortfolioMet />} />
         <Route path="/met/charts" element={<GraphiquesMet />} />
+        {/* Portfolio Healthcare */}
+        <Route path="/healthcare" element={<PortfolioHealthcare />} />
+        <Route path="/healthcare/charts" element={<GraphiquesHealthcare />} />
+        {/* Portfolio Basic Materials */}
+        <Route path="/materials" element={<PortfolioBasicMaterials />} />
+        <Route path="/materials/charts" element={<GraphiquesBasicMaterials />} />
+        {/* Portfolio Industrials */}
+        <Route path="/industrials" element={<PortfolioIndustrials />} />
+        <Route path="/industrials/charts" element={<GraphiquesIndustrials />} />
+        {/* Portfolio Technology */}
+        <Route path="/technology" element={<PortfolioTechnology />} />
+        <Route path="/technology/charts" element={<GraphiquesTechnology />} />
       </Routes>
     </Router>
   );

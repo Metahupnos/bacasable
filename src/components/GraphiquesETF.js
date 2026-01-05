@@ -16,11 +16,11 @@ function GraphiquesETF() {
   const [lastAvailableDate, setLastAvailableDate] = useState('');
 
   const etfs = [
-    { symbol: 'CSPX.AS', name: 'iShares Core S&P 500', color: '#4caf50', units: 354 },
-    { symbol: 'IWDA.AS', name: 'iShares Core MSCI World', color: '#2196f3', units: 1424 },
-    { symbol: 'EMIM.AS', name: 'iShares Core MSCI EM', color: '#ff9800', units: 2567 },
-    { symbol: 'SC0J.DE', name: 'Invesco MSCI World Small Cap', color: '#9c27b0', units: 796 },
-    { symbol: 'EQEU.DE', name: 'Invesco Nasdaq-100 Acc', color: '#f44336', units: 144 }
+    { symbol: 'CSPX.AS', name: 'iShares Core S&P 500', color: '#4caf50', units: 354, buyDate: '2025-08-29', buyPrice: 594.97, sellDate: '2025-10-28', sellPrice: 630.11 },
+    { symbol: 'IWDA.AS', name: 'iShares Core MSCI World', color: '#2196f3', units: 1424, buyDate: '2025-08-29', buyPrice: 105.50, sellDate: '2025-10-28', sellPrice: 111.23 },
+    { symbol: 'EMIM.AS', name: 'iShares Core MSCI EM', color: '#ff9800', units: 2567, buyDate: '2025-08-29', buyPrice: 34.98, sellDate: '2025-10-28', sellPrice: 38.40 },
+    { symbol: 'SC0J.DE', name: 'Invesco MSCI World Small Cap', color: '#9c27b0', units: 796, buyDate: '2025-08-29', buyPrice: 113.22, sellDate: '2025-10-28', sellPrice: 119.37 },
+    { symbol: 'EQEU.DE', name: 'Invesco Nasdaq-100 Acc', color: '#f44336', units: 144, buyDate: '2025-09-19', buyPrice: 428.57, sellDate: '2025-10-28', sellPrice: 451.40 }
   ];
 
   const CREATION_DATE = '2025-08-29'; // Date de création du portefeuille
@@ -125,6 +125,26 @@ function GraphiquesETF() {
     const lastPrice = data[data.length - 1].price;
     if (!firstPrice || !lastPrice) return null;
     return ((lastPrice - firstPrice) / firstPrice * 100).toFixed(2);
+  };
+
+  // Convertir une date YYYY-MM-DD en format DD/MM/YYYY
+  const formatDateToFR = (dateStr) => {
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
+  // Ajouter les points d'achat et de vente aux données du graphique
+  const addBuySellPoints = (chartData, etf) => {
+    if (!chartData || chartData.length === 0) return chartData;
+
+    const buyDateFR = formatDateToFR(etf.buyDate);
+    const sellDateFR = formatDateToFR(etf.sellDate);
+
+    return chartData.map(item => ({
+      ...item,
+      buyPoint: item.date === buyDateFR ? etf.buyPrice : null,
+      sellPoint: item.date === sellDateFR ? etf.sellPrice : null
+    }));
   };
 
   // Extraire seulement la valeur de clôture (dernier point) de chaque jour
@@ -579,6 +599,13 @@ function GraphiquesETF() {
           );
         }
 
+        // Ajouter les points d'achat et de vente
+        const chartDataWithPoints = addBuySellPoints(filteredChartData, etf);
+
+        // Calculer le gain réalisé
+        const gain = (etf.sellPrice - etf.buyPrice) * etf.units;
+        const gainPercent = ((etf.sellPrice - etf.buyPrice) / etf.buyPrice * 100).toFixed(2);
+
         return (
           <div key={etf.symbol} className="chart-section">
             <h2>
@@ -624,8 +651,17 @@ function GraphiquesETF() {
                 return null;
               })()}
             </h2>
+            <div style={{ fontSize: '0.75rem', color: '#9fa3a8', marginBottom: '5px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>
+                <span style={{ color: '#4caf50' }}>● Achat:</span> {formatDateToFR(etf.buyDate)} @ {etf.buyPrice.toLocaleString('fr-FR')} EUR |
+                <span style={{ color: '#f44336', marginLeft: '10px' }}>● Vente:</span> {formatDateToFR(etf.sellDate)} @ {etf.sellPrice.toLocaleString('fr-FR')} EUR
+              </span>
+              <span style={{ color: parseFloat(gainPercent) >= 0 ? '#4caf50' : '#f44336', fontWeight: 'bold' }}>
+                Gain réalisé: {parseFloat(gainPercent) >= 0 ? '+' : ''}{gainPercent}% ({gain >= 0 ? '+' : ''}{gain.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} EUR)
+              </span>
+            </div>
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={filteredChartData}>
+              <LineChart data={chartDataWithPoints}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
                 <XAxis
                   dataKey={isIntradayPeriod ? "datetime" : "date"}
@@ -682,6 +718,15 @@ function GraphiquesETF() {
                     }
                     return label;
                   }}
+                  formatter={(value, name) => {
+                    if (name === 'buyPoint' && value) {
+                      return [`${value.toLocaleString('fr-FR')} EUR`, 'Prix achat'];
+                    }
+                    if (name === 'sellPoint' && value) {
+                      return [`${value.toLocaleString('fr-FR')} EUR`, 'Prix vente'];
+                    }
+                    return [`${value?.toLocaleString('fr-FR')} EUR`, 'Prix'];
+                  }}
                 />
                 <Line
                   type="monotone"
@@ -690,6 +735,26 @@ function GraphiquesETF() {
                   strokeWidth={2}
                   dot={false}
                   name="Prix (EUR)"
+                />
+                {/* Point d'achat - vert */}
+                <Line
+                  type="monotone"
+                  dataKey="buyPoint"
+                  stroke="#4caf50"
+                  strokeWidth={0}
+                  dot={{ r: 6, fill: '#4caf50', stroke: '#ffffff', strokeWidth: 2 }}
+                  name="buyPoint"
+                  isAnimationActive={false}
+                />
+                {/* Point de vente - rouge */}
+                <Line
+                  type="monotone"
+                  dataKey="sellPoint"
+                  stroke="#f44336"
+                  strokeWidth={0}
+                  dot={{ r: 6, fill: '#f44336', stroke: '#ffffff', strokeWidth: 2 }}
+                  name="sellPoint"
+                  isAnimationActive={false}
                 />
               </LineChart>
             </ResponsiveContainer>

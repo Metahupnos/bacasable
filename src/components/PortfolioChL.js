@@ -10,21 +10,18 @@ function PortfolioChL() {
   const [error, setError] = useState(null);
   const [eurUsdRate, setEurUsdRate] = useState(null); // Taux EUR/USD
 
-  // Liquidités restantes après achats (mis à jour 20/12/2025 - Rapport Bolero)
-  const liquidites = 23452.59; // EUR: 20,452.33 + USD: 3,513.30 (3,000.26 EUR)
+  // Liquidités (mis à jour 05/01/2026 - Après vente LLY et achat HYMC)
+  const liquidites = 198306.83;
 
-  // Données du portefeuille ChL - Actions US (mis à jour 20/12/2025 - Rapport Bolero)
-  // buyValueEUR calculé avec taux 0.8540 EUR/USD (543,587.34 EUR / 636,540.77 USD)
+  // Données du portefeuille ChL (mis à jour 05/01/2026 - Après vente LLY et achat HYMC)
   const stocks = [
-    { symbol: 'RKLB', name: 'Rocket Lab Corporation', units: 2200, buyPriceUSD: 57.60097, buyValueEUR: 108225 },  // 126.722,13 USD
-    { symbol: 'LLY', name: 'Eli Lilly and Co.', units: 111, buyPriceUSD: 1032.06829, buyValueEUR: 97834 },  // 114.559,58 USD
-    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 292.85757, buyValueEUR: 87535 },  // 102.500,15 USD
-    { symbol: 'WDC', name: 'Western Digital Corp.', units: 400, buyPriceUSD: 163.44213, buyValueEUR: 55832 },  // 65.376,85 USD
-    { symbol: 'AMAT', name: 'Applied Materials Inc.', units: 240, buyPriceUSD: 251.98396, buyValueEUR: 51647 },  // 60.476,15 USD
-    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', units: 600, buyPriceEUR: 81.62, buyValueEUR: 48970.62, currency: 'EUR' },  // 48.970,62 EUR
-    { symbol: 'REGN', name: 'Regeneron Pharmaceuticals', units: 75, buyPriceUSD: 788.51893, buyValueEUR: 50505 },  // 59.138,92 USD
-    { symbol: 'AVGO', name: 'Broadcom Inc.', units: 150, buyPriceUSD: 386.45760, buyValueEUR: 49505 },  // 57.968,64 USD
-    { symbol: 'IDXX', name: 'Idexx Laboratories', units: 65, buyPriceUSD: 766.12846, buyValueEUR: 42528 }  // 49.798,35 USD
+    { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', units: 58, buyPriceUSD: 2076.33, buyValueEUR: 115795 },
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 291.466, buyValueEUR: 87535 },
+    { symbol: 'HYMC', name: 'Hycroft Mining', units: 2000, buyPriceUSD: 27.7256, buyValueEUR: 53553 },
+    { symbol: 'WDC', name: 'Western Digital Corp.', units: 400, buyPriceUSD: 163.44213, buyValueEUR: 55832 },
+    { symbol: 'AMAT', name: 'Applied Materials Inc.', units: 240, buyPriceUSD: 251.98396, buyValueEUR: 51647 },
+    { symbol: 'PHAGA.XD', name: 'WisdomTree Physical Silver', units: 900, buyPriceEUR: 55.43, buyValueEUR: 49883.28, currency: 'EUR' },
+    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', units: 600, buyPriceEUR: 81.62, buyValueEUR: 48970.62, currency: 'EUR' }
   ];
 
   useEffect(() => {
