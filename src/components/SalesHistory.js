@@ -235,6 +235,7 @@ function SalesHistory() {
   };
 
   // Calculs pour les actions US
+  // eslint-disable-next-line no-unused-vars
   const totalUSStockPurchases = usStockPurchases.reduce((sum, p) => sum + (p.price * p.quantity), 0);
 
   // Récapitulatif du portefeuille actions US (positions actuelles au 22/12/2025)
@@ -247,6 +248,7 @@ function SalesHistory() {
   };
 
   // Vente LLY du 05/01/2026
+  // eslint-disable-next-line no-unused-vars
   const llySale2026 = {
     orderNumber: '118171131',
     reference: '000052757686',
@@ -331,6 +333,7 @@ function SalesHistory() {
   ];
 
   // Vente partielle LLY du 08/12/2025
+  // eslint-disable-next-line no-unused-vars
   const llySale = {
     orderNumber: '000052329454',
     executionDate: '08/12/2025',
@@ -342,6 +345,7 @@ function SalesHistory() {
   };
 
   // Achats RKLB (vendus le 22/12/2025)
+  // eslint-disable-next-line no-unused-vars
   const rklbPurchases = [
     {
       reference: '000052408393',
