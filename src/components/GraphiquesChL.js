@@ -15,10 +15,11 @@ function GraphiquesChL() {
   const [usdEurHistory, setUsdEurHistory] = useState([]);
   const [usdEurByDate, setUsdEurByDate] = useState({});
 
-  // Mis à jour 05/01/2026 - Après vente LLY et achat HYMC
+  // Mis à jour 07/01/2026 - Après achat SK Hynix
   // Actions actuelles
   const stocks = [
     { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', color: '#1428a0', units: 58, buyPrice: 2076.33, buyDate: '2025-12-29' },
+    { symbol: 'HY9H.F', name: 'SK Hynix Inc. GDR', color: '#e91e63', units: 100, currency: 'EUR', buyPrice: 430, buyDate: '2026-01-06' },
     { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', color: '#2196f3', units: 350, buyPrice: 292.86, buyDate: '2025-11-20' },
     { symbol: 'HYMC', name: 'Hycroft Mining', color: '#9c27b0', units: 2000, buyPrice: 27.73, buyDate: '2026-01-05' },
     { symbol: 'WDC', name: 'Western Digital Corp.', color: '#00bcd4', units: 400, buyPrice: 163.44, buyDate: '2025-11-28' },

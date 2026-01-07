@@ -10,18 +10,20 @@ function PortfolioChL() {
   const [error, setError] = useState(null);
   const [eurUsdRate, setEurUsdRate] = useState(null); // Taux EUR/USD
 
-  // Liquidités (mis à jour 05/01/2026 - Après vente LLY et achat HYMC)
-  const liquidites = 198306.83;
+  // Liquidités (mis à jour 07/01/2026 - Après achat SK Hynix)
+  // EUR: 19898.10 + USD: (209077.19 - 50916.14) = 158161.05 USD
+  const liquidites = 154182.33; // 19898.10 + 158161.05/1.178 EUR
 
-  // Données du portefeuille ChL (mis à jour 05/01/2026 - Après vente LLY et achat HYMC)
+  // Données du portefeuille ChL (mis à jour 07/01/2026 - Après achat SK Hynix)
   const stocks = [
-    { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', units: 58, buyPriceUSD: 2076.33, buyValueEUR: 115795 },
-    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 291.466, buyValueEUR: 87535 },
-    { symbol: 'HYMC', name: 'Hycroft Mining', units: 2000, buyPriceUSD: 27.7256, buyValueEUR: 53553 },
-    { symbol: 'WDC', name: 'Western Digital Corp.', units: 400, buyPriceUSD: 163.44213, buyValueEUR: 55832 },
-    { symbol: 'AMAT', name: 'Applied Materials Inc.', units: 240, buyPriceUSD: 251.98396, buyValueEUR: 51647 },
-    { symbol: 'PHAGA.XD', name: 'WisdomTree Physical Silver', units: 900, buyPriceEUR: 55.43, buyValueEUR: 49883.28, currency: 'EUR' },
-    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', units: 600, buyPriceEUR: 81.62, buyValueEUR: 48970.62, currency: 'EUR' }
+    { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', units: 58, buyPriceUSD: 2076.3276, buyValueEUR: 120427 },
+    { symbol: 'HY9H.F', name: 'SK Hynix Inc. GDR', units: 100, buyPriceEUR: 430, buyValueEUR: 43210.50, currency: 'EUR' },
+    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 292.8576, buyValueEUR: 102500.15 },
+    { symbol: 'HYMC', name: 'Hycroft Mining', units: 2000, buyPriceUSD: 27.8476, buyValueEUR: 55695.28 },
+    { symbol: 'WDC', name: 'Western Digital Corp.', units: 400, buyPriceUSD: 163.4421, buyValueEUR: 65376.85 },
+    { symbol: 'AMAT', name: 'Applied Materials Inc.', units: 240, buyPriceUSD: 251.984, buyValueEUR: 60476.15 },
+    { symbol: 'PHAGA.XD', name: 'WisdomTree Physical Silver', units: 900, buyPriceEUR: 55.4259, buyValueEUR: 49883.28, currency: 'EUR' },
+    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', units: 600, buyPriceEUR: 81.6177, buyValueEUR: 48970.62, currency: 'EUR' }
   ];
 
   useEffect(() => {

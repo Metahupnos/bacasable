@@ -373,6 +373,9 @@ function SalesHistory() {
 
   // Timeline complète du portefeuille (évolution chronologique - ordre Bolero: date desc, ref desc)
   const portfolioTimeline = [
+    // 06/01/2026 - Achat SK Hynix
+    { date: '06/01/2026', type: 'buy', description: 'Achat SK Hynix GDR (100 actions)', amountEUR: -43210.50, amountUSD: -50916.14, feesEUR: 210.50, details: '100 × 430 EUR (règlement USD)', currency: 'EUR', ref: '000052790956', bordereau: '2026 1744402' },
+
     // 05/01/2026 - Vente LLY + Achat HYMC
     { date: '05/01/2026', type: 'sell', description: 'Vente Eli Lilly (111 actions)', amountUSD: 116550.36, costBasisUSD: 114559.58, feesUSD: 559.89, details: '111 × 1055.05 USD', currency: 'USD', ref: '000052757686', bordereau: '2026 1067387' },
     { date: '05/01/2026', type: 'buy', description: 'Achat Hycroft Mining (2000 actions)', amountUSD: -55695.28, feesUSD: 244.08, details: '2000 × 27.73 USD', currency: 'USD', ref: '000052759164', bordereau: '2026 1081560' },
