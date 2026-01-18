@@ -15,7 +15,7 @@ import {
 } from 'recharts';
 import '../App.css';
 
-const PROXY_URL = 'http://localhost:4001';
+const PROXY_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SCREENERS FINVIZ - Deux variantes disponibles
