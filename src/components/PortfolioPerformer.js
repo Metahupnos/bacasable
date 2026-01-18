@@ -1074,9 +1074,6 @@ function PortfolioPerformer() {
         }
       );
 
-      // Compter les ENTRY_ZONE (pour stats)
-      if (tradeState.state === 'ENTRY_ZONE') entryZoneCount++;
-
       // ═══════════════════════════════════════════════════════════════════════
       // RÈGLE FINALE: Position Size selon State
       // - ENTRY_ZONE → Afficher taille recommandée
