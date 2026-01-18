@@ -18,6 +18,8 @@ import PortfolioIndustrials from './components/PortfolioIndustrials';
 import GraphiquesIndustrials from './components/GraphiquesIndustrials';
 import PortfolioTechnology from './components/PortfolioTechnology';
 import GraphiquesTechnology from './components/GraphiquesTechnology';
+import PortfolioPerformer from './components/PortfolioPerformer';
+import PortfolioPerformerChoose from './components/PortfolioPerformerChoose';
 import './App.css';
 
 function App() {
@@ -50,6 +52,10 @@ function App() {
         {/* Portfolio Technology */}
         <Route path="/technology" element={<PortfolioTechnology />} />
         <Route path="/technology/charts" element={<GraphiquesTechnology />} />
+        {/* Portfolio Performer */}
+        <Route path="/performer" element={<PortfolioPerformer />} />
+        {/* Decision Tracker */}
+        <Route path="/tracker" element={<PortfolioPerformerChoose />} />
       </Routes>
     </Router>
   );

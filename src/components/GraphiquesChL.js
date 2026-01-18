@@ -15,17 +15,16 @@ function GraphiquesChL() {
   const [usdEurHistory, setUsdEurHistory] = useState([]);
   const [usdEurByDate, setUsdEurByDate] = useState({});
 
-  // Mis à jour 07/01/2026 - Après achat SK Hynix
+  // Mis à jour 17/01/2026 - Après achats CRWV, GLXY, RDW, SNDK, WDC
   // Actions actuelles
   const stocks = [
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', color: '#2196f3', units: 350, buyPrice: 292.86, buyDate: '2025-11-20' },
+    { symbol: 'CRWV', name: 'Coreweave Inc.', color: '#00bcd4', units: 500, buyPrice: 101.37, buyDate: '2026-01-16' },
+    { symbol: 'GLXY', name: 'Galaxy Digital', color: '#ff9800', units: 1500, buyPrice: 34.01, buyDate: '2026-01-16' },
+    { symbol: 'RDW', name: 'Redwire Corp.', color: '#e91e63', units: 5000, buyPrice: 10.90, buyDate: '2026-01-09' },
     { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', color: '#1428a0', units: 58, buyPrice: 2076.33, buyDate: '2025-12-29' },
-    { symbol: 'HY9H.F', name: 'SK Hynix Inc. GDR', color: '#e91e63', units: 100, currency: 'EUR', buyPrice: 430, buyDate: '2026-01-06' },
-    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', color: '#2196f3', units: 350, buyPrice: 292.86, buyDate: '2025-11-20' },
-    { symbol: 'HYMC', name: 'Hycroft Mining', color: '#9c27b0', units: 2000, buyPrice: 27.73, buyDate: '2026-01-05' },
-    { symbol: 'WDC', name: 'Western Digital Corp.', color: '#00bcd4', units: 400, buyPrice: 163.44, buyDate: '2025-11-28' },
-    { symbol: 'AMAT', name: 'Applied Materials Inc.', color: '#8bc34a', units: 240, buyPrice: 251.98, buyDate: '2025-11-28' },
-    { symbol: 'PHAG.L', name: 'WisdomTree Physical Silver', color: '#c0c0c0', units: 900, currency: 'EUR', buyPrice: 55.43, buyDate: '2025-12-29', convertFromUSD: true },
-    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', color: '#ffc107', units: 600, currency: 'EUR', buyPrice: 81.62, buyDate: '2025-12-01' }
+    { symbol: 'SNDK', name: 'Sandisk Corp.', color: '#9c27b0', units: 150, buyPrice: 382.14, buyDate: '2026-01-09' },
+    { symbol: 'WDC', name: 'Western Digital', color: '#4caf50', units: 300, buyPrice: 199.37, buyDate: '2026-01-09' }
   ];
 
   // Actions vendues (historique) - courbes grises
@@ -36,17 +35,23 @@ function GraphiquesChL() {
     { symbol: 'RKLB', name: 'Rocket Lab (vendu)', color: '#777777', units: 2200, buyPrice: 57.60, buyDate: '2025-12-08', sellPrice: 76.91, sellDate: '2025-12-22', sold: true, currency: 'USD' },
     { symbol: 'AVGO', name: 'Broadcom (vendu)', color: '#888888', units: 150, buyPrice: 384.78, buyDate: '2025-11-25', sellPrice: 339.48, sellDate: '2025-12-22', sold: true, currency: 'USD' },
     { symbol: 'REGN', name: 'Regeneron (vendu)', color: '#999999', units: 75, buyPrice: 785.10, buyDate: '2025-11-25', sellPrice: 777.56, sellDate: '2025-12-22', sold: true, currency: 'USD' },
-    { symbol: 'IDXX', name: 'IDEXX Labs (vendu)', color: '#aaaaaa', units: 65, buyPrice: 762.69, buyDate: '2025-11-25', sellPrice: 692.36, sellDate: '2025-12-22', sold: true, currency: 'USD' }
+    { symbol: 'IDXX', name: 'IDEXX Labs (vendu)', color: '#aaaaaa', units: 65, buyPrice: 762.69, buyDate: '2025-11-25', sellPrice: 692.36, sellDate: '2025-12-22', sold: true, currency: 'USD' },
+    { symbol: 'WDC', name: 'Western Digital (vendu)', color: '#00bcd4', units: 400, buyPrice: 163.44, buyDate: '2025-11-28', sellPrice: 201.14, sellDate: '2026-01-07', sold: true, currency: 'USD' },
+    { symbol: 'AMAT', name: 'Applied Materials (vendu)', color: '#8bc34a', units: 240, buyPrice: 251.98, buyDate: '2025-11-28', sellPrice: 290.32, sellDate: '2026-01-07', sold: true, currency: 'USD' },
+    { symbol: 'HYMC', name: 'Hycroft Mining (vendu)', color: '#9c27b0', units: 2000, buyPrice: 27.73, buyDate: '2026-01-05', sellPrice: 27.53, sellDate: '2026-01-07', sold: true, currency: 'USD' },
+    { symbol: 'HY9H.F', name: 'SK Hynix GDR (vendu)', color: '#e91e63', units: 100, buyPrice: 430, buyDate: '2026-01-06', sellPrice: 436.86, sellDate: '2026-01-07', sold: true, currency: 'EUR' }
   ];
 
-  // ETF vendus (historique) - courbes grises - achetés 29/08/2025, vendus 28/10/2025
-  // Prix avec frais inclus - Symboles Yahoo Finance depuis PortfolioETF.js
+  // ETF vendus (historique) - courbes grises
+  // Prix avec frais inclus - Symboles Yahoo Finance
   const soldETFs = [
     { symbol: 'CSPX.AS', name: 'iShares S&P 500 (vendu)', color: '#555555', units: 354, buyPrice: 596.23, buyDate: '2025-08-29', sellPrice: 628.41, sellDate: '2025-10-28', sold: true, currency: 'EUR' },
     { symbol: 'IWDA.AS', name: 'iShares MSCI World (vendu)', color: '#606060', units: 1424, buyPrice: 105.73, buyDate: '2025-08-29', sellPrice: 110.93, sellDate: '2025-10-28', sold: true, currency: 'EUR' },
     { symbol: 'EMIM.AS', name: 'iShares MSCI EM (vendu)', color: '#6b6b6b', units: 2567, buyPrice: 35.05, buyDate: '2025-08-29', sellPrice: 38.32, sellDate: '2025-10-28', sold: true, currency: 'EUR' },
     { symbol: 'SC0J.DE', name: 'Invesco MSCI World (vendu)', color: '#767676', units: 796, buyPrice: 113.52, buyDate: '2025-08-29', sellPrice: 119.04, sellDate: '2025-10-28', sold: true, currency: 'EUR' },
-    { symbol: 'EQEU.DE', name: 'Invesco Nasdaq-100 (vendu)', color: '#818181', units: 144, buyPrice: 429.50, buyDate: '2025-09-19', sellPrice: 450.44, sellDate: '2025-10-28', sold: true, currency: 'EUR' }
+    { symbol: 'EQEU.DE', name: 'Invesco Nasdaq-100 (vendu)', color: '#818181', units: 144, buyPrice: 429.50, buyDate: '2025-09-19', sellPrice: 450.44, sellDate: '2025-10-28', sold: true, currency: 'EUR' },
+    { symbol: 'G2X.DE', name: 'VanEck Gold Miners (vendu)', color: '#ffc107', units: 600, buyPrice: 81.62, buyDate: '2025-12-01', sellPrice: 85.44, sellDate: '2026-01-07', sold: true, currency: 'EUR' },
+    { symbol: 'PHAG.L', name: 'WisdomTree Physical Silver (vendu)', color: '#c0c0c0', units: 900, buyPrice: 55.43, buyDate: '2025-12-29', sellPrice: 59.93, sellDate: '2026-01-07', sold: true, currency: 'EUR', convertFromUSD: true }
   ];
 
   // Tous les stocks pour affichage (actions + ETF vendus)
@@ -175,8 +180,9 @@ function GraphiquesChL() {
 
       const promises = allStocks.map(async (stock) => {
         try {
-          const url = `${apiBase}/api/history/${stock.symbol}/${selectedPeriod}`;
-          console.log(`Fetching ${stock.symbol} from ${url}`);
+          const ticker = stock.yahooTicker || stock.symbol;
+          const url = `${apiBase}/api/history/${ticker}/${selectedPeriod}`;
+          console.log(`Fetching ${stock.symbol} (${ticker}) from ${url}`);
           const response = await axios.get(url);
 
           const result = response.data.chart.result[0];

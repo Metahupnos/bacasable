@@ -61,6 +61,20 @@ function Home() {
       description: 'Tech & IA (LPTH, AAOI, ZETA, MU, PATH, VELO)',
       color: '#673ab7',
       path: '/technology'
+    },
+    {
+      id: 'performer',
+      name: 'Portfolio Performer',
+      description: 'Top Performers - Screener Finviz + Yahoo Finance',
+      color: '#f44336',
+      path: '/performer'
+    },
+    {
+      id: 'tracker',
+      name: 'Decision Tracker',
+      description: 'Univers fixe - Dois-je agir, attendre ou ne rien faire?',
+      color: '#e91e63',
+      path: '/tracker'
     }
   ];
 

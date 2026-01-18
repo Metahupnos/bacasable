@@ -374,3 +374,9 @@
     word-break: break-word;
   }
 }
+
+/* Animation clignotante pour EXIT signal */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}

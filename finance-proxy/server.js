@@ -149,6 +149,93 @@ app.get('/api/history/:symbol/:period', async (req, res) => {
   }
 });
 
+// Route proxy pour Finviz screener (avec pagination)
+app.get('/api/finviz/screener', async (req, res) => {
+  try {
+    const { filters, sort, limit } = req.query;
+    const maxTickers = parseInt(limit) || 50; // Limite par défaut: 50
+    const now = Date.now();
+
+    // Vérifier le cache
+    const cacheKey = `finviz_${filters}_${sort}_${maxTickers}`;
+    const cached = cache.get(cacheKey);
+    if (cached && (now - cached.timestamp) < 30000) { // Cache 30 secondes
+      console.log(`🔄 Cache hit Finviz (${cached.data.tickers.length} tickers)`);
+      return res.json(cached.data);
+    }
+
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Connection': 'keep-alive',
+      'Referer': 'https://finviz.com/'
+    };
+
+    const foundTickers = new Set();
+    const tickersPerPage = 20;
+    const pagesNeeded = Math.ceil(maxTickers / tickersPerPage);
+
+    // Boucle sur les pages Finviz (r=1, r=21, r=41, ...)
+    for (let page = 0; page < pagesNeeded && foundTickers.size < maxTickers; page++) {
+      const startRow = page * tickersPerPage + 1; // r=1, r=21, r=41...
+      const finvizUrl = `https://finviz.com/screener.ashx?v=141&f=${filters || 'sec_healthcare'}&o=${sort || '-perf1w'}&r=${startRow}`;
+
+      console.log(`🔍 Scraping Finviz page ${page + 1}: r=${startRow}`);
+
+      try {
+        const response = await axios.get(finvizUrl, { headers, timeout: 15000 });
+        const html = response.data;
+
+        // Extraire les tickers de cette page
+        const patterns = [
+          /quote\.ashx\?t=([A-Z]{1,5})&/g,
+          /href="quote\.ashx\?t=([A-Z]{1,5})"/g
+        ];
+
+        let tickersFoundOnPage = 0;
+        for (const pattern of patterns) {
+          let match;
+          while ((match = pattern.exec(html)) !== null) {
+            if (!foundTickers.has(match[1])) {
+              foundTickers.add(match[1]);
+              tickersFoundOnPage++;
+            }
+          }
+        }
+
+        console.log(`   → ${tickersFoundOnPage} nouveaux tickers (total: ${foundTickers.size})`);
+
+        // Si aucun nouveau ticker trouvé, on a atteint la fin
+        if (tickersFoundOnPage === 0) {
+          console.log(`   → Fin des résultats Finviz`);
+          break;
+        }
+
+        // Pause entre les requêtes pour éviter le rate limiting
+        if (page < pagesNeeded - 1 && foundTickers.size < maxTickers) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      } catch (pageError) {
+        console.error(`   ❌ Erreur page ${page + 1}:`, pageError.message);
+        break;
+      }
+    }
+
+    const tickers = [...foundTickers].slice(0, maxTickers);
+    const result = { tickers, timestamp: new Date().toISOString() };
+
+    // Mettre en cache
+    cache.set(cacheKey, { data: result, timestamp: now });
+
+    console.log(`✅ Finviz: ${tickers.length} tickers trouvés (${pagesNeeded} pages scannées)`);
+    res.json(result);
+  } catch (error) {
+    console.error(`❌ Erreur Finviz:`, error.message);
+    res.status(500).json({ error: 'Erreur Finviz', message: error.message });
+  }
+});
+
 // Route de santé pour vérifier que le serveur fonctionne
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Proxy Yahoo Finance opérationnel' });

@@ -9,21 +9,21 @@ function PortfolioChL() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [eurUsdRate, setEurUsdRate] = useState(null); // Taux EUR/USD
+  const [gbpEurRate, setGbpEurRate] = useState(null); // Taux GBP/EUR
 
-  // Liquidités (mis à jour 07/01/2026 - Après achat SK Hynix)
-  // EUR: 19898.10 + USD: (209077.19 - 50916.14) = 158161.05 USD
-  const liquidites = 154182.33; // 19898.10 + 158161.05/1.178 EUR
+  // Liquidités (mis à jour 17/01/2026)
+  const liquidites = 245380.40; // EUR
 
-  // Données du portefeuille ChL (mis à jour 07/01/2026 - Après achat SK Hynix)
+  // Données du portefeuille ChL (mis à jour 17/01/2026)
+  // buyTotalUSD = montant total payé en USD (d'après bordereaux Bolero)
   const stocks = [
-    { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', units: 58, buyPriceUSD: 2076.3276, buyValueEUR: 120427 },
-    { symbol: 'HY9H.F', name: 'SK Hynix Inc. GDR', units: 100, buyPriceEUR: 430, buyValueEUR: 43210.50, currency: 'EUR' },
-    { symbol: 'GOOG', name: 'Alphabet Inc. (Class A)', units: 350, buyPriceUSD: 292.8576, buyValueEUR: 102500.15 },
-    { symbol: 'HYMC', name: 'Hycroft Mining', units: 2000, buyPriceUSD: 27.8476, buyValueEUR: 55695.28 },
-    { symbol: 'WDC', name: 'Western Digital Corp.', units: 400, buyPriceUSD: 163.4421, buyValueEUR: 65376.85 },
-    { symbol: 'AMAT', name: 'Applied Materials Inc.', units: 240, buyPriceUSD: 251.984, buyValueEUR: 60476.15 },
-    { symbol: 'PHAGA.XD', name: 'WisdomTree Physical Silver', units: 900, buyPriceEUR: 55.4259, buyValueEUR: 49883.28, currency: 'EUR' },
-    { symbol: 'G2X.DE', name: 'VanEck Gold Miners ETF', units: 600, buyPriceEUR: 81.6177, buyValueEUR: 48970.62, currency: 'EUR' }
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', units: 350, buyPriceUSD: 291.47, buyTotalUSD: 102500.15 },
+    { symbol: 'CRWV', name: 'Coreweave Inc.', units: 500, buyPriceUSD: 101.3662, buyTotalUSD: 50910.49 },
+    { symbol: 'GLXY', name: 'Galaxy Digital', units: 1500, buyPriceUSD: 34.01, buyTotalUSD: 51489.94 },
+    { symbol: 'RDW', name: 'Redwire Corp.', units: 5000, buyPriceUSD: 10.90, buyTotalUSD: 54970.38 },
+    { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', units: 58, buyPriceUSD: 2058.83, buyTotalUSD: 120427 },
+    { symbol: 'SNDK', name: 'Sandisk Corp.', units: 150, buyPriceUSD: 382.14, buyTotalUSD: 57822.28 },
+    { symbol: 'WDC', name: 'Western Digital', units: 300, buyPriceUSD: 199.37, buyTotalUSD: 60320.34 }
   ];
 
   useEffect(() => {
@@ -50,11 +50,24 @@ function PortfolioChL() {
         setEurUsdRate(null);
       }
 
+      // Récupérer le taux GBP/EUR (pour Samsung)
+      try {
+        const gbpResponse = await axios.get(`${apiBase}/api/finance/GBPEUR=X`);
+        const gbpData = gbpResponse.data.chart.result[0];
+        const gbpRate = gbpData.meta.regularMarketPrice;
+        setGbpEurRate(gbpRate);
+        console.log(`Taux GBP/EUR: ${gbpRate}`);
+      } catch (err) {
+        console.error('Erreur taux GBP/EUR:', err);
+        setGbpEurRate(1.20); // Taux par défaut
+      }
+
       const promises = stocks.map(async (stock) => {
         try {
           const apiBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
-          const url = `${apiBase}/api/finance/${stock.symbol}`;
-          console.log(`Fetching ${stock.symbol} from ${url}`);
+          const ticker = stock.yahooTicker || stock.symbol;
+          const url = `${apiBase}/api/finance/${ticker}`;
+          console.log(`Fetching ${stock.symbol} (${ticker}) from ${url}`);
           const response = await axios.get(url);
 
           const data = response.data.chart.result[0];
@@ -101,16 +114,13 @@ function PortfolioChL() {
   };
 
   const getTotalBuyUSD = () => {
-    return stocks.reduce((sum, stock) => {
-      if (stock.buyPriceUSD) {
-        return sum + (stock.buyPriceUSD * stock.units);
-      }
-      return sum;
-    }, 0);
+    return stocks.reduce((sum, stock) => sum + (stock.buyTotalUSD || 0), 0);
   };
 
   const getTotalBuyEUR = () => {
-    return stocks.reduce((sum, stock) => sum + stock.buyValueEUR, 0);
+    // Convertit le total USD en EUR au taux actuel
+    if (!eurUsdRate) return null;
+    return getTotalBuyUSD() / eurUsdRate;
   };
 
   const getTotalCurrentEUR = () => {
@@ -164,29 +174,53 @@ function PortfolioChL() {
                   <th>Action</th>
                   <th>Achat (USD)</th>
                   <th>Actuel (USD)</th>
-                  <th>Total achat (EUR)</th>
+                  <th>Total achat</th>
                   <th>Total actuel</th>
-                  <th>+/- (USD)</th>
+                  <th>+/- (Devise)</th>
                   <th>+/- (EUR)</th>
                 </tr>
               </thead>
               <tbody>
                 {portfolio.map((stock, index) => {
-                  // Gestion spéciale pour les titres en EUR (G2X.DE)
-                  const buyPrice = stock.buyPriceEUR || stock.buyPriceUSD;
+                  // Gestion des devises: EUR, GBP, USD
                   const isEUR = stock.currency === 'EUR';
+                  const isGBP = stock.currency === 'GBP' || stock.currency === 'GBp';
 
-                  const diffUSD = stock.currentPrice && !isEUR ? (stock.currentPrice - stock.buyPriceUSD) * stock.units : null;
-                  const diffPercent = stock.currentPrice && buyPrice ? ((stock.currentPrice - buyPrice) / buyPrice * 100) : null;
+                  // Prix d'achat selon la devise
+                  const buyPrice = stock.buyPriceEUR || stock.buyPriceGBP || stock.buyPriceUSD;
 
-                  const totalCurrentEUR = isEUR && stock.currentPrice
-                    ? stock.currentPrice * stock.units
-                    : (stock.totalUSD && eurUsdRate ? stock.totalUSD / eurUsdRate : null);
+                  // Prix actuel (GBp = pence, diviser par 100 pour avoir GBP)
+                  const currentPrice = isGBP && stock.currency === 'GBp'
+                    ? stock.currentPrice / 100
+                    : stock.currentPrice;
 
-                  const diffEUR = totalCurrentEUR && stock.buyValueEUR
-                    ? totalCurrentEUR - stock.buyValueEUR
-                    : null;
-                  const diffPercentEUR = diffEUR && stock.buyValueEUR ? (diffEUR / stock.buyValueEUR * 100) : null;
+                  // Calcul du diff selon la devise
+                  let diffValue = null;
+                  let diffPercent = null;
+                  let totalCurrentEUR = null;
+                  let diffEUR = null;
+
+                  if (isGBP && currentPrice && stock.buyPriceGBP) {
+                    // Samsung en GBP
+                    diffValue = (currentPrice - stock.buyPriceGBP) * stock.units;
+                    diffPercent = ((currentPrice - stock.buyPriceGBP) / stock.buyPriceGBP * 100);
+                    totalCurrentEUR = gbpEurRate ? currentPrice * stock.units * gbpEurRate : null;
+                    diffEUR = gbpEurRate ? diffValue * gbpEurRate : null;
+                  } else if (isEUR && currentPrice) {
+                    // Titres en EUR
+                    diffValue = (currentPrice - (stock.buyPriceEUR || 0)) * stock.units;
+                    diffPercent = stock.buyPriceEUR ? ((currentPrice - stock.buyPriceEUR) / stock.buyPriceEUR * 100) : null;
+                    totalCurrentEUR = currentPrice * stock.units;
+                    diffEUR = diffValue;
+                  } else if (currentPrice && stock.buyPriceUSD) {
+                    // Titres en USD
+                    diffValue = (currentPrice - stock.buyPriceUSD) * stock.units;
+                    diffPercent = ((currentPrice - stock.buyPriceUSD) / stock.buyPriceUSD * 100);
+                    totalCurrentEUR = eurUsdRate ? (currentPrice * stock.units) / eurUsdRate : null;
+                    diffEUR = eurUsdRate ? diffValue / eurUsdRate : null;
+                  }
+
+                  const diffPercentEUR = diffPercent; // Même % car c'est la performance du titre
                   const portfolioPercent = stock.totalUSD && getTotalCurrentUSD() > 0 ? (stock.totalUSD / getTotalCurrentUSD() * 100) : null;
 
                   return (
@@ -203,25 +237,33 @@ function PortfolioChL() {
                         </a>
                       </td>
                       <td className="etf-sell-price">
-                        {formatNumber(buyPrice)}
+                        {formatNumber(buyPrice)} {isGBP && <span style={{ fontSize: '0.7rem', color: '#9fa3a8' }}>GBP</span>}
                       </td>
-                      <td className={`etf-price ${stock.currentPrice && stock.currentPrice > buyPrice ? 'price-higher' : 'price-lower'}`}>
-                        {stock.currentPrice ? (
-                          formatNumber(stock.currentPrice)
+                      <td className={`etf-price ${currentPrice && currentPrice > buyPrice ? 'price-higher' : 'price-lower'}`}>
+                        {currentPrice ? (
+                          <>
+                            {formatNumber(currentPrice)}
+                            {isGBP && <span style={{ fontSize: '0.7rem', color: '#9fa3a8' }}> GBP</span>}
+                          </>
                         ) : (
                           <span className="error-text">N/A</span>
                         )}
                       </td>
                       <td className="etf-sell-total">
-                        {formatNumber(stock.buyValueEUR)}
+                        <div>{formatNumber(stock.buyTotalUSD)} USD</div>
+                        {eurUsdRate && (
+                          <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
+                            {formatNumber(stock.buyTotalUSD / eurUsdRate)} EUR
+                          </div>
+                        )}
                       </td>
                       <td className="etf-total">
-                        {stock.totalUSD || (isEUR && totalCurrentEUR) ? (
+                        {currentPrice ? (
                           <>
-                            <div>{formatNumber(totalCurrentEUR)} EUR</div>
-                            {!isEUR && stock.totalUSD && (
+                            <div>{formatNumber(currentPrice * stock.units)} {isGBP ? 'GBP' : isEUR ? 'EUR' : 'USD'}</div>
+                            {totalCurrentEUR !== null && (
                               <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
-                                {formatNumber(stock.totalUSD)} USD
+                                {formatNumber(totalCurrentEUR)} EUR
                               </div>
                             )}
                           </>
@@ -229,12 +271,10 @@ function PortfolioChL() {
                           <span className="error-text">N/A</span>
                         )}
                       </td>
-                      <td className={isEUR ? '' : (diffUSD && diffUSD >= 0 ? 'positive' : 'negative')}>
-                        {isEUR ? (
-                          <div style={{ color: '#9fa3a8' }}>N/A</div>
-                        ) : diffUSD !== null ? (
+                      <td className={diffValue !== null && diffValue >= 0 ? 'positive' : 'negative'}>
+                        {diffValue !== null ? (
                           <>
-                            <div>{diffUSD >= 0 ? '+' : ''}{formatNumber(diffUSD)}</div>
+                            <div>{diffValue >= 0 ? '+' : ''}{formatNumber(diffValue)} {isGBP ? 'GBP' : isEUR ? 'EUR' : 'USD'}</div>
                             <div style={{ fontSize: '0.7rem', marginTop: '2px' }}>
                               {diffPercent >= 0 ? '+' : ''}{diffPercent.toFixed(2)}%
                             </div>
@@ -261,18 +301,20 @@ function PortfolioChL() {
                 <tr className="total-row" style={{ fontSize: '0.75rem' }}>
                   <td colSpan="3">TOTAL</td>
                   <td>
-                    <div>{formatNumber(getTotalBuyEUR())} EUR</div>
-                    <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
-                      {formatNumber(getTotalBuyUSD())} USD
-                    </div>
+                    <div>{formatNumber(getTotalBuyUSD())} USD</div>
+                    {getTotalBuyEUR() && (
+                      <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
+                        {formatNumber(getTotalBuyEUR())} EUR
+                      </div>
+                    )}
                   </td>
                   <td>
+                    <div>{formatNumber(getTotalCurrentUSD())} USD</div>
                     {getTotalCurrentEUR() && (
-                      <div>{formatNumber(getTotalCurrentEUR())} EUR</div>
+                      <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
+                        {formatNumber(getTotalCurrentEUR())} EUR
+                      </div>
                     )}
-                    <div style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '2px' }}>
-                      {formatNumber(getTotalCurrentUSD())} USD
-                    </div>
                   </td>
                   <td className={getTotalCurrentUSD() - getTotalBuyUSD() >= 0 ? 'positive' : 'negative'}>
                     <div>
@@ -283,15 +325,15 @@ function PortfolioChL() {
                       {((getTotalCurrentUSD() - getTotalBuyUSD()) / getTotalBuyUSD() * 100).toFixed(2)}%
                     </div>
                   </td>
-                  <td className={getTotalCurrentEUR() && getTotalCurrentEUR() - getTotalBuyEUR() >= 0 ? 'positive' : 'negative'}>
-                    {getTotalCurrentEUR() ? (
+                  <td className={getTotalCurrentUSD() - getTotalBuyUSD() >= 0 ? 'positive' : 'negative'}>
+                    {eurUsdRate ? (
                       <>
                         <div>
-                          {getTotalCurrentEUR() - getTotalBuyEUR() >= 0 ? '+' : ''}
-                          {formatNumber(getTotalCurrentEUR() - getTotalBuyEUR())}
+                          {getTotalCurrentUSD() - getTotalBuyUSD() >= 0 ? '+' : ''}
+                          {formatNumber((getTotalCurrentUSD() - getTotalBuyUSD()) / eurUsdRate)}
                         </div>
                         <div style={{ fontSize: '0.7rem', marginTop: '2px' }}>
-                          {((getTotalCurrentEUR() - getTotalBuyEUR()) / getTotalBuyEUR() * 100).toFixed(2)}%
+                          {((getTotalCurrentUSD() - getTotalBuyUSD()) / getTotalBuyUSD() * 100).toFixed(2)}%
                         </div>
                       </>
                     ) : (
@@ -311,16 +353,16 @@ function PortfolioChL() {
                   <td style={{ fontWeight: 'bold' }}>{formatNumber(getTotalBuyEUR() + liquidites)} EUR</td>
                   <td style={{ fontWeight: 'bold' }}>{getTotalCurrentEUR() && formatNumber(getTotalCurrentEUR() + liquidites)} EUR</td>
                   <td></td>
-                  <td className={getTotalCurrentEUR() && getTotalCurrentEUR() - getTotalBuyEUR() >= 0 ? 'positive' : 'negative'} style={{ fontWeight: 'bold' }}>
-                    {getTotalCurrentEUR() ? (
-                      <div>{getTotalCurrentEUR() - getTotalBuyEUR() >= 0 ? '+' : ''}{formatNumber(getTotalCurrentEUR() - getTotalBuyEUR())} EUR</div>
+                  <td className={getTotalCurrentUSD() - getTotalBuyUSD() >= 0 ? 'positive' : 'negative'} style={{ fontWeight: 'bold' }}>
+                    {eurUsdRate ? (
+                      <div>{getTotalCurrentUSD() - getTotalBuyUSD() >= 0 ? '+' : ''}{formatNumber((getTotalCurrentUSD() - getTotalBuyUSD()) / eurUsdRate)} EUR</div>
                     ) : <span className="error-text">N/A</span>}
                   </td>
                 </tr>
               </tbody>
             </table>
             <p style={{ fontSize: '0.7rem', color: '#9fa3a8', marginTop: '10px', textAlign: 'center' }}>
-              * Prix d'achat incluent frais et impôts | Taux EUR/USD actuel : {eurUsdRate ? eurUsdRate.toFixed(4) : 'N/A'}
+              * Prix d'achat incluent frais et impôts | EUR/USD: {eurUsdRate ? eurUsdRate.toFixed(4) : 'N/A'} | GBP/EUR: {gbpEurRate ? gbpEurRate.toFixed(4) : 'N/A'}
             </p>
           </>
         )}
