@@ -5,7 +5,6 @@ import './SalesHistory.css';
 function SalesHistory() {
   const navigate = useNavigate();
   const [eurUsdRate, setEurUsdRate] = useState(1.04); // Taux par défaut
-  const [rateLoading, setRateLoading] = useState(true);
   const [historicalRates, setHistoricalRates] = useState({}); // Taux historiques par date
   const [currentPrices, setCurrentPrices] = useState({}); // Cours actuels par ticker
 
@@ -90,8 +89,6 @@ function SalesHistory() {
         }
       } catch (error) {
         console.error('Erreur lors de la récupération des taux EUR/USD:', error);
-      } finally {
-        setRateLoading(false);
       }
     };
     fetchEurUsdRates();
@@ -121,6 +118,7 @@ function SalesHistory() {
       setCurrentPrices(prices);
     };
     fetchCurrentPrices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Obtenir le taux EUR/USD pour une date donnée (cherche la date la plus proche si pas trouvée)
@@ -308,55 +306,8 @@ function SalesHistory() {
       .sort((a, b) => b.totalCost - a.totalCost); // Trier par valeur investie décroissante
   })();
 
-  // Calculer le solde cumulé pour chaque transaction (du plus ancien au plus récent)
-  const timelineWithBalance = (() => {
-    let liquiditeEUR = 0;
-    let liquiditeUSD = 0;
-
-    // D'abord calculer les soldes dans l'ordre chronologique (ancien → récent)
-    const reversedTimeline = [...portfolioTimeline].reverse();
-    const withBalances = reversedTimeline.map(item => {
-      // Dépôts: augmentent les liquidités
-      if (item.type === 'deposit') {
-        liquiditeEUR += item.amountEUR || 0;
-      }
-      // Retraits: diminuent les liquidités
-      else if (item.type === 'withdrawal') {
-        liquiditeEUR += item.amountEUR || 0; // amountEUR est négatif pour les retraits
-      }
-      // Dividendes: ajoutent aux liquidités
-      else if (item.type === 'dividend') {
-        liquiditeEUR += item.amountEUR || 0;
-      }
-      // Conversions: transfèrent EUR vers USD dans les liquidités + frais déduits
-      else if (item.type === 'conversion') {
-        liquiditeEUR += item.amountEUR || 0; // négatif (on débite EUR)
-        liquiditeEUR -= item.feesEUR || 0; // frais de conversion
-        liquiditeUSD += item.amountUSD || 0; // positif (on crédite USD)
-      }
-      // Achats: diminuent les liquidités
-      else if (item.type === 'buy') {
-        if (item.currency === 'USD') {
-          liquiditeUSD -= Math.abs(item.amountUSD || 0);
-        } else {
-          liquiditeEUR -= Math.abs(item.amountEUR || 0);
-        }
-      }
-      // Ventes: augmentent les liquidités
-      else if (item.type === 'sell') {
-        if (item.currency === 'USD') {
-          liquiditeUSD += item.amountUSD || 0;
-        } else {
-          liquiditeEUR += item.amountEUR || 0;
-        }
-      }
-
-      return { ...item };
-    });
-
-    // Puis remettre dans l'ordre Bolero (récent → ancien)
-    return withBalances.reverse();
-  })();
+  // Timeline pour affichage (ordre Bolero: récent → ancien)
+  const timelineWithBalance = portfolioTimeline;
 
   return (
     <div className="sales-history-container">
