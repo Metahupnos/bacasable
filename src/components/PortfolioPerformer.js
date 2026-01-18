@@ -90,7 +90,7 @@ function PortfolioPerformer() {
 
   // Générer les screeners selon le mode
   const SCREENERS = getScreeners(wideMode);
-  const [tickers, setTickers] = useState([]);
+  const [, setTickers] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -161,14 +161,6 @@ function PortfolioPerformer() {
     return journal.trades.filter(t =>
       t.timestamp && t.timestamp.startsWith(today)
     ).length;
-  };
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // P5: HELPER - Obtenir le secteur d'une position ouverte
-  // ═══════════════════════════════════════════════════════════════════════════
-  const getOpenPositionSector = (ticker) => {
-    const trade = journal.trades.find(t => t.ticker === ticker && t.status === 'OPEN');
-    return trade?.sector || null;
   };
 
   // Vérifier si un secteur a déjà une position ouverte
@@ -542,10 +534,6 @@ function PortfolioPerformer() {
     };
   };
 
-  const applyTraderFilter = (data) => {
-    return getFilterDetails(data).passes;
-  };
-
   // ═══════════════════════════════════════════════════════════════════════════
   // NEXT TRIGGER - Ce qu'il faut attendre pour passer ENTRY
   // ═══════════════════════════════════════════════════════════════════════════
@@ -793,7 +781,6 @@ function PortfolioPerformer() {
     // Gestion des valeurs nulles (marché pas encore ouvert)
     const perf1D = data.perf1D ?? 0;
     const perf2D = data.perf2D ?? 0;
-    const relVolume = data.relVolume ?? 1; // Défaut à 1 si pas de données
 
     // EXIT si: J < 0 ET J-1 < 0 (deux jours rouges consécutifs)
     const twoRedDays = (perf1D < 0 && perf2D < 0);
@@ -838,7 +825,7 @@ function PortfolioPerformer() {
   // 8. OK → ENTRY_ZONE
   // ═══════════════════════════════════════════════════════════════════════════
   const calculateTradeState = (data, overextension, exitSignal, config = {}) => {
-    const { isMaxPositionsReached, isIlliquid, rank, isInPosition, momentumScore, timeStopStatus } = config;
+    const { isMaxPositionsReached, isIlliquid, isInPosition, momentumScore, timeStopStatus } = config;
 
     // ┌─────────────────────────────────────────────────────────────────────────┐
     // │ PRIORITÉ 0: Position ouverte → IN_POSITION ou EXIT_ONLY                │
@@ -1059,7 +1046,6 @@ function PortfolioPerformer() {
 
     // Phase 2: Appliquer maxPositions et finaliser tradeState
     const isMaxPositionsReached = openPositions.length >= tradingConfig.maxOpenPositions;
-    let entryZoneCount = 0;
 
     return baseData.map((data, index) => {
       const rank = index + 1;
@@ -1464,6 +1450,7 @@ function PortfolioPerformer() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchFinvizTickers]);
 
   useEffect(() => {
