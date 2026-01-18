@@ -15,6 +15,11 @@
   to = "/.netlify/functions/history/:splat"
   status = 200
 
+[[redirects]]
+  from = "/api/finviz/*"
+  to = "/.netlify/functions/finviz"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
