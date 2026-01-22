@@ -15,7 +15,6 @@ function PortfolioFiducenter() {
   const [activeTab, setActiveTab] = useState('actions');
   const [showTransactions, setShowTransactions] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const [loading1Y, setLoading1Y] = useState(false);
 
   // Portefeuille Fiducenter 65/35 - Positions au 31/12/2025
   // Source: Relevé Quintet Private Bank - Fiducenter Asset Management
@@ -341,16 +340,6 @@ function PortfolioFiducenter() {
   const formatPercent = (num) => {
     if (num === null || num === undefined) return 'N/A';
     return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
-  };
-
-  const getSectorTotals = () => {
-    const sectors = {};
-    portfolio.forEach(stock => {
-      const valueEUR = convertToEUR(stock.currentPrice * stock.units, stock.currency) || 0;
-      if (!sectors[stock.sector]) sectors[stock.sector] = 0;
-      sectors[stock.sector] += valueEUR;
-    });
-    return sectors;
   };
 
   // Fonction de tri

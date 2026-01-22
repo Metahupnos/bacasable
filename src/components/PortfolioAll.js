@@ -46,7 +46,6 @@ const PORTFOLIO_TICKERS = [
 ];
 
 // Date de référence pour le point sur les graphiques
-const REFERENCE_DATE = '2026-01-22';
 const REFERENCE_DATE_FORMATTED = '22/01';
 
 // Couleurs pour les graphiques

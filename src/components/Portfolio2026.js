@@ -11,8 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  Cell,
-  Scatter
+  Cell
 } from 'recharts';
 import '../App.css';
 
@@ -36,7 +35,6 @@ const PORTFOLIO_TICKERS = [
 ];
 
 // Date de référence pour le point sur les graphiques
-const REFERENCE_DATE = '2026-01-22';
 const REFERENCE_DATE_FORMATTED = '22/01';
 
 // Couleurs pour les graphiques
