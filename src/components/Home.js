@@ -75,6 +75,34 @@ function Home() {
       description: 'Univers fixe - Dois-je agir, attendre ou ne rien faire?',
       color: '#e91e63',
       path: '/tracker'
+    },
+    {
+      id: 'fiducenter',
+      name: 'Portfolio Fiducenter 65/35',
+      description: 'Gestion Fiducenter - 2.6M EUR - Perf 2025: +17%',
+      color: '#00bcd4',
+      path: '/fiducenter'
+    },
+    {
+      id: 'fiducenter5050',
+      name: 'Portfolio Fiducenter 50/50',
+      description: 'Gestion Fiducenter - 9.3M EUR - Perf 2025: +8%',
+      color: '#673ab7',
+      path: '/fiducenter5050'
+    },
+    {
+      id: 'portfolio2026',
+      name: 'Portfolio 2026-01-22',
+      description: 'Métaux/Mining (USAR, HL, CDE, ARIS, NGD) + Biotech (MRNA, CRVS, ERAS)',
+      color: '#ffd700',
+      path: '/portfolio2026'
+    },
+    {
+      id: 'all',
+      name: 'Portfolio All - Basic Materials',
+      description: 'Top 20 Finviz: HYMC, CRML, UAMY, METC, USAR, HL, AG, NGD, CDE...',
+      color: '#ff9800',
+      path: '/all'
     }
   ];
 
