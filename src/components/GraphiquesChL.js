@@ -15,31 +15,33 @@ function GraphiquesChL() {
   const [usdEurHistory, setUsdEurHistory] = useState([]);
   const [usdEurByDate, setUsdEurByDate] = useState({});
 
-  // Mis à jour 17/01/2026 - Après achats CRWV, GLXY, RDW, SNDK, WDC
+  // Mis à jour 21/01/2026 - Après ventes CRWV, GLXY, RDW et achats MU, SQM
   // Actions actuelles
   const stocks = [
     { symbol: 'GOOGL', name: 'Alphabet Inc.', color: '#2196f3', units: 350, buyPrice: 292.86, buyDate: '2025-11-20' },
-    { symbol: 'CRWV', name: 'Coreweave Inc.', color: '#00bcd4', units: 500, buyPrice: 101.37, buyDate: '2026-01-16' },
-    { symbol: 'GLXY', name: 'Galaxy Digital', color: '#ff9800', units: 1500, buyPrice: 34.01, buyDate: '2026-01-16' },
-    { symbol: 'RDW', name: 'Redwire Corp.', color: '#e91e63', units: 5000, buyPrice: 10.90, buyDate: '2026-01-09' },
+    { symbol: 'MU', name: 'Micron Technology', color: '#00bcd4', units: 150, buyPrice: 387.55, buyDate: '2026-01-21' },
+    { symbol: 'SQM', name: 'SQM', color: '#ff9800', units: 700, buyPrice: 81.83, buyDate: '2026-01-21' },
     { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', color: '#1428a0', units: 58, buyPrice: 2076.33, buyDate: '2025-12-29' },
-    { symbol: 'SNDK', name: 'Sandisk Corp.', color: '#9c27b0', units: 150, buyPrice: 382.14, buyDate: '2026-01-09' },
-    { symbol: 'WDC', name: 'Western Digital', color: '#4caf50', units: 300, buyPrice: 199.37, buyDate: '2026-01-09' }
+    { symbol: 'SNDK', name: 'Sandisk Corp.', color: '#9c27b0', units: 150, buyPrice: 383.81, buyDate: '2026-01-09' },
+    { symbol: 'WDC', name: 'Western Digital', color: '#4caf50', units: 300, buyPrice: 200.23, buyDate: '2026-01-09' }
   ];
 
   // Actions vendues (historique) - courbes grises
   // Prix de vente = montant net après frais / quantité
   // Les taux USD/EUR seront récupérés dynamiquement depuis l'historique
   const soldStocks = [
+    { symbol: 'CRWV', name: 'Coreweave Inc. (vendu)', color: '#00bcd4', units: 500, buyPrice: 101.37, buyDate: '2026-01-16', sellPrice: 92.86, sellDate: '2026-01-21', sold: true, currency: 'USD' },
+    { symbol: 'GLXY', name: 'Galaxy Digital (vendu)', color: '#ff9800', units: 1500, buyPrice: 34.01, buyDate: '2026-01-16', sellPrice: 31.10, sellDate: '2026-01-21', sold: true, currency: 'USD' },
+    { symbol: 'RDW', name: 'Redwire Corp. (vendu)', color: '#e91e63', units: 5000, buyPrice: 10.90, buyDate: '2026-01-09', sellPrice: 10.21, sellDate: '2026-01-21', sold: true, currency: 'USD' },
     { symbol: 'LLY', name: 'Eli Lilly (vendu)', color: '#666666', units: 111, buyPrice: 1032.07, buyDate: '2025-11-17', sellPrice: 1050.00, sellDate: '2026-01-05', sold: true, currency: 'USD' },
     { symbol: 'RKLB', name: 'Rocket Lab (vendu)', color: '#777777', units: 2200, buyPrice: 57.60, buyDate: '2025-12-08', sellPrice: 76.91, sellDate: '2025-12-22', sold: true, currency: 'USD' },
     { symbol: 'AVGO', name: 'Broadcom (vendu)', color: '#888888', units: 150, buyPrice: 384.78, buyDate: '2025-11-25', sellPrice: 339.48, sellDate: '2025-12-22', sold: true, currency: 'USD' },
     { symbol: 'REGN', name: 'Regeneron (vendu)', color: '#999999', units: 75, buyPrice: 785.10, buyDate: '2025-11-25', sellPrice: 777.56, sellDate: '2025-12-22', sold: true, currency: 'USD' },
     { symbol: 'IDXX', name: 'IDEXX Labs (vendu)', color: '#aaaaaa', units: 65, buyPrice: 762.69, buyDate: '2025-11-25', sellPrice: 692.36, sellDate: '2025-12-22', sold: true, currency: 'USD' },
-    { symbol: 'WDC', name: 'Western Digital (vendu)', color: '#00bcd4', units: 400, buyPrice: 163.44, buyDate: '2025-11-28', sellPrice: 201.14, sellDate: '2026-01-07', sold: true, currency: 'USD' },
+    { symbol: 'WDC', name: 'Western Digital (vendu)', color: '#bbbbbb', units: 400, buyPrice: 163.44, buyDate: '2025-11-28', sellPrice: 201.14, sellDate: '2026-01-07', sold: true, currency: 'USD' },
     { symbol: 'AMAT', name: 'Applied Materials (vendu)', color: '#8bc34a', units: 240, buyPrice: 251.98, buyDate: '2025-11-28', sellPrice: 290.32, sellDate: '2026-01-07', sold: true, currency: 'USD' },
     { symbol: 'HYMC', name: 'Hycroft Mining (vendu)', color: '#9c27b0', units: 2000, buyPrice: 27.73, buyDate: '2026-01-05', sellPrice: 27.53, sellDate: '2026-01-07', sold: true, currency: 'USD' },
-    { symbol: 'HY9H.F', name: 'SK Hynix GDR (vendu)', color: '#e91e63', units: 100, buyPrice: 430, buyDate: '2026-01-06', sellPrice: 436.86, sellDate: '2026-01-07', sold: true, currency: 'EUR' }
+    { symbol: 'HY9H.F', name: 'SK Hynix GDR (vendu)', color: '#cccccc', units: 100, buyPrice: 430, buyDate: '2026-01-06', sellPrice: 436.86, sellDate: '2026-01-07', sold: true, currency: 'EUR' }
   ];
 
   // ETF vendus (historique) - courbes grises
