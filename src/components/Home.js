@@ -7,11 +7,11 @@ function Home() {
 
   const portfolios = [
     {
-      id: 'etf',
-      name: 'Portfolio ETF',
-      description: 'Suivi des ETF (actions vendues)',
-      color: '#61dafb',
-      path: '/etf'
+      id: 'sector',
+      name: 'Portfolio Secteur',
+      description: 'Dashboard unifié - Choix du secteur (Materials, Healthcare, Tech, Industrials, Energy)',
+      color: '#00e676',
+      path: '/sector'
     },
     {
       id: 'chl',
@@ -33,34 +33,6 @@ function Home() {
       description: 'Actions US (AVGO, LLY, GOOGL, IDXX, REGN)',
       color: '#9c27b0',
       path: '/met'
-    },
-    {
-      id: 'healthcare',
-      name: 'Portfolio Healthcare',
-      description: 'Biotech & Healthcare (PACS, CRMD, PRAX, OMER, FULC)',
-      color: '#e91e63',
-      path: '/healthcare'
-    },
-    {
-      id: 'materials',
-      name: 'Portfolio Basic Materials',
-      description: 'Minières & Matériaux (ERO, ALB, PAAS, CDE, HYMC)',
-      color: '#ff5722',
-      path: '/materials'
-    },
-    {
-      id: 'industrials',
-      name: 'Portfolio Industrials',
-      description: 'Transport & Industrie (ZIM, KRMN, SBLK, LUNR, MAN)',
-      color: '#00bcd4',
-      path: '/industrials'
-    },
-    {
-      id: 'technology',
-      name: 'Portfolio Technology',
-      description: 'Tech & IA (LPTH, AAOI, ZETA, MU, PATH, VELO)',
-      color: '#673ab7',
-      path: '/technology'
     },
     {
       id: 'performer',
@@ -91,18 +63,11 @@ function Home() {
       path: '/fiducenter5050'
     },
     {
-      id: 'portfolio2026',
-      name: 'Portfolio 2026-01-22',
-      description: 'Métaux/Mining (USAR, HL, CDE, ARIS, NGD) + Biotech (MRNA, CRVS, ERAS)',
-      color: '#ffd700',
-      path: '/portfolio2026'
-    },
-    {
-      id: 'all',
-      name: 'Portfolio All - Basic Materials',
-      description: 'Top 20 Finviz: HYMC, CRML, UAMY, METC, USAR, HL, AG, NGD, CDE...',
-      color: '#ff9800',
-      path: '/all'
+      id: 'etf',
+      name: 'Portfolio ETF',
+      description: 'Suivi des ETF (actions vendues)',
+      color: '#61dafb',
+      path: '/etf'
     }
   ];
 

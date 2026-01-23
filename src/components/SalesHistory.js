@@ -34,6 +34,8 @@ function SalesHistory() {
     'Invesco Nasdaq-100': { ticker: 'EQQQ.PA', name: 'Invesco Nasdaq-100' },
     'Invesco Nasdaq-100 nouveau': { ticker: 'EQQQ.PA', name: 'Invesco Nasdaq-100' },
     'Invesco Nasdaq-100 ancien': { ticker: 'EQQQ.PA', name: 'Invesco Nasdaq-100' },
+    'Micron Technology, Inc.': { ticker: 'MU', name: 'Micron Technology, Inc.' },
+    'SQM': { ticker: 'SQM', name: 'SQM' },
   };
 
   // Fonction pour extraire le ticker depuis la description
@@ -141,6 +143,13 @@ function SalesHistory() {
 
   // Timeline complète du portefeuille (évolution chronologique - ordre Bolero: date desc, ref desc)
   const portfolioTimeline = [
+    // 21/01/2026 - Achats MU et SQM, Ventes GLXY, RDW et CRWV
+    { date: '21/01/2026', type: 'buy', description: 'SQM (700 actions)', amountUSD: -57283.87, feesUSD: 249.62, details: '700 × 81.4775 USD', currency: 'USD', ref: '000053139192', bordereau: '2026 8900995' },
+    { date: '21/01/2026', type: 'buy', description: 'Micron Technology, Inc. (150 actions)', amountUSD: -58132.53, feesUSD: 252.58, details: '150 × 385.8663 USD', currency: 'USD', ref: '000053139094', bordereau: '2026 8899752' },
+    { date: '21/01/2026', type: 'sell', description: 'Galaxy Digital (1500 actions)', amountUSD: 46430.00, costBasisUSD: 51489.94, feesUSD: 213.25, details: '1500 × 31.0955 USD', currency: 'USD', ref: '000053137568', bordereau: '2026 8877666' },
+    { date: '21/01/2026', type: 'sell', description: 'Redwire Corp. (5000 actions)', amountUSD: 50821.82, costBasisUSD: 54970.38, feesUSD: 228.68, details: '5000 × 10.2101 USD', currency: 'USD', ref: '000053135491', bordereau: '2026 8847191' },
+    { date: '21/01/2026', type: 'sell', description: 'Coreweave Inc. (500 actions)', amountUSD: 46218.54, costBasisUSD: 50910.49, feesUSD: 212.51, details: '500 × 92.8621 USD', currency: 'USD', ref: '000053132721', bordereau: '2026 8816674' },
+
     // 16/01/2026 - Achats CRWV et GLXY
     { date: '16/01/2026', type: 'buy', description: 'Coreweave Inc. (500 actions)', amountUSD: -50910.49, feesUSD: 227.39, details: '500 × 101.3662 USD', currency: 'USD', ref: '000053046838', bordereau: '2026 7109476' },
     { date: '16/01/2026', type: 'buy', description: 'Galaxy Digital (1500 actions)', amountUSD: -51489.94, feesUSD: 250.15, details: '1500 × 34.01 USD', currency: 'USD', ref: '000053046686', bordereau: '2026 3972837' },

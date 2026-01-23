@@ -53,12 +53,57 @@ const WATCHLIST_PASSIVE = [
   { ticker: 'BE', name: 'Bloom Energy' }
 ];
 
+// D. WATCHLIST FIDUCENTER 65/35
+const WATCHLIST_FIDUCENTER = [
+  // Energie
+  { ticker: 'SHEL.AS', name: 'Shell PLC', yahooTicker: 'SHELL.AS' },
+  { ticker: 'TE.PA', name: 'Technip Energies' },
+  { ticker: 'BP.L', name: 'BP' },
+  { ticker: 'LNG', name: 'Cheniere Energy' },
+  // Materiaux
+  { ticker: 'AI.PA', name: 'Air Liquide' },
+  { ticker: 'BEKB.BR', name: 'Bekaert' },
+  { ticker: 'HEI.DE', name: 'Heidelberg Materials' },
+  { ticker: 'ABX.TO', name: 'Barrick Mining' },
+  { ticker: 'GLEN.L', name: 'Glencore PLC' },
+  // Industrie
+  { ticker: 'CRI.PA', name: 'Chargeurs' },
+  { ticker: 'DBG.PA', name: 'Derichebourg' },
+  { ticker: 'DHL.DE', name: 'Deutsche Post' },
+  { ticker: 'LDO.MI', name: 'Leonardo' },
+  { ticker: 'CHG.L', name: 'Chemring Group' },
+  { ticker: 'VRT', name: 'Vertiv Holdings' },
+  // Conso. Discret.
+  { ticker: 'PRX.AS', name: 'Prosus NV' },
+  { ticker: 'TRI.PA', name: 'Trigano' },
+  // Santé
+  { ticker: 'BIM.PA', name: 'Biomerieux' },
+  { ticker: 'BNTX', name: 'BioNTech SE' },
+  { ticker: 'DHR', name: 'Danaher' },
+  // Finance
+  { ticker: 'SAN.MC', name: 'Banco Santander' },
+  { ticker: 'EXV1.DE', name: 'iShares STOXX 600 Banks' },
+  { ticker: 'NN.AS', name: 'NN Group' },
+  { ticker: 'C', name: 'Citigroup' },
+  { ticker: 'COIN', name: 'Coinbase' },
+  // Tech
+  { ticker: 'ASML.AS', name: 'ASML Holding' },
+  { ticker: 'IFX.DE', name: 'Infineon' },
+  { ticker: 'MSFT', name: 'Microsoft' },
+  { ticker: 'NVDA', name: 'Nvidia' },
+  // Communication
+  { ticker: 'CLNX.MC', name: 'Cellnex Telecom' },
+  { ticker: 'GOOGL', name: 'Alphabet' },
+  // Immobilier
+  { ticker: 'VGP.BR', name: 'VGP' }
+];
+
 // Storage key pour les stops (Entry est hardcodé)
 const STOPS_KEY = 'decisionTracker_stops';
 
 function PortfolioPerformerChoose() {
   const navigate = useNavigate();
-  const [data, setData] = useState({ positions: [], watchActive: [], watchPassive: [] });
+  const [data, setData] = useState({ positions: [], watchActive: [], watchPassive: [], watchFiducenter: [] });
   const [loading, setLoading] = useState(false);
   const [loadingTicker, setLoadingTicker] = useState('');
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -301,7 +346,7 @@ function PortfolioPerformerChoose() {
   // ═══════════════════════════════════════════════════════════════════════════
   const loadData = useCallback(async () => {
     setLoading(true);
-    const results = { positions: [], watchActive: [], watchPassive: [] };
+    const results = { positions: [], watchActive: [], watchPassive: [], watchFiducenter: [] };
 
     const processCategory = async (items, category, resultKey) => {
       for (const item of items) {
@@ -338,6 +383,7 @@ function PortfolioPerformerChoose() {
     await processCategory(POSITIONS, 'position', 'positions');
     await processCategory(WATCHLIST_ACTIVE, 'watchActive', 'watchActive');
     await processCategory(WATCHLIST_PASSIVE, 'watchPassive', 'watchPassive');
+    await processCategory(WATCHLIST_FIDUCENTER, 'watchPassive', 'watchFiducenter');
 
     setData(results);
     setLoadingTicker('');
@@ -727,6 +773,7 @@ function PortfolioPerformerChoose() {
 
           {renderTable(data.watchActive, 'B. Watchlist Active', '#2196f3', false)}
           {renderTable(data.watchPassive, 'C. Watchlist Passive', '#9c27b0', false)}
+          {renderTable(data.watchFiducenter, 'D. Watchlist Fiducenter 65/35', '#00bcd4', false)}
         </div>
       </header>
     </div>

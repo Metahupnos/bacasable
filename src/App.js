@@ -10,22 +10,13 @@ import PortfolioMel from './components/PortfolioMel';
 import GraphiquesMel from './components/GraphiquesMel';
 import PortfolioMet from './components/PortfolioMet';
 import GraphiquesMet from './components/GraphiquesMet';
-import PortfolioHealthcare from './components/PortfolioHealthcare';
-import GraphiquesHealthcare from './components/GraphiquesHealthcare';
-import PortfolioBasicMaterials from './components/PortfolioBasicMaterials';
-import GraphiquesBasicMaterials from './components/GraphiquesBasicMaterials';
-import PortfolioIndustrials from './components/PortfolioIndustrials';
-import GraphiquesIndustrials from './components/GraphiquesIndustrials';
-import PortfolioTechnology from './components/PortfolioTechnology';
-import GraphiquesTechnology from './components/GraphiquesTechnology';
 import PortfolioPerformer from './components/PortfolioPerformer';
 import PortfolioPerformerChoose from './components/PortfolioPerformerChoose';
 import PortfolioFiducenter from './components/PortfolioFiducenter';
 import GraphiquesFiducenter from './components/GraphiquesFiducenter';
 import PortfolioFiducenter5050 from './components/PortfolioFiducenter5050';
 import GraphiquesFiducenter5050 from './components/GraphiquesFiducenter5050';
-import Portfolio2026 from './components/Portfolio2026';
-import PortfolioAll from './components/PortfolioAll';
+import PortfolioSector from './components/PortfolioSector';
 import './App.css';
 
 function App() {
@@ -46,18 +37,6 @@ function App() {
         {/* Portfolio Met */}
         <Route path="/met" element={<PortfolioMet />} />
         <Route path="/met/charts" element={<GraphiquesMet />} />
-        {/* Portfolio Healthcare */}
-        <Route path="/healthcare" element={<PortfolioHealthcare />} />
-        <Route path="/healthcare/charts" element={<GraphiquesHealthcare />} />
-        {/* Portfolio Basic Materials */}
-        <Route path="/materials" element={<PortfolioBasicMaterials />} />
-        <Route path="/materials/charts" element={<GraphiquesBasicMaterials />} />
-        {/* Portfolio Industrials */}
-        <Route path="/industrials" element={<PortfolioIndustrials />} />
-        <Route path="/industrials/charts" element={<GraphiquesIndustrials />} />
-        {/* Portfolio Technology */}
-        <Route path="/technology" element={<PortfolioTechnology />} />
-        <Route path="/technology/charts" element={<GraphiquesTechnology />} />
         {/* Portfolio Performer */}
         <Route path="/performer" element={<PortfolioPerformer />} />
         {/* Decision Tracker */}
@@ -68,10 +47,8 @@ function App() {
         {/* Portfolio Fiducenter 50/50 */}
         <Route path="/fiducenter5050" element={<PortfolioFiducenter5050 />} />
         <Route path="/fiducenter5050/charts" element={<GraphiquesFiducenter5050 />} />
-        {/* Portfolio 2026-01-22 */}
-        <Route path="/portfolio2026" element={<Portfolio2026 />} />
-        {/* Portfolio All - Basic Materials */}
-        <Route path="/all" element={<PortfolioAll />} />
+        {/* Portfolio Secteur - Dashboard unifié */}
+        <Route path="/sector" element={<PortfolioSector />} />
       </Routes>
     </Router>
   );

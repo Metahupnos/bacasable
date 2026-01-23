@@ -15,10 +15,214 @@ import {
 } from 'recharts';
 import '../App.css';
 
-const CHART_COLORS = ['#e91e63', '#673ab7', '#2196f3', '#ff9800', '#4caf50'];
+// Configuration des secteurs
+const FINVIZ_BASE = 'https://finviz.com/screener.ashx?v=141&f=sec_';
+const FINVIZ_PARAMS = ',sh_avgvol_o2000,sh_price_o10,sh_relvol_o0.75,ta_volatility_wo3&o=-perf4w';
 
-function PortfolioHealthcare() {
+const SECTORS = {
+  'basic-materials': {
+    name: 'Basic Materials',
+    color: '#ff5722',
+    description: 'Suivi des valeurs minières et matériaux',
+    finvizUrl: `${FINVIZ_BASE}basicmaterials${FINVIZ_PARAMS}`,
+    stocks: [
+      { symbol: 'HYMC', name: 'Hycroft Mining', description: 'Or/argent spéculatif' },
+      { symbol: 'CRML', name: 'Cordia Corporation', description: 'Minéraux' },
+      { symbol: 'UAMY', name: 'United States Antimony', description: 'Antimoine USA' },
+      { symbol: 'METC', name: 'Ramaco Resources', description: 'Charbon métallurgique' },
+      { symbol: 'USAR', name: 'US Gold Corp', description: 'Exploration or USA' },
+      { symbol: 'HL', name: 'Hecla Mining', description: 'Argent et or' },
+      { symbol: 'AG', name: 'First Majestic Silver', description: 'Producteur argent Mexique' },
+      { symbol: 'NGD', name: 'New Gold', description: 'Producteur or Canada' },
+      { symbol: 'EXK', name: 'Endeavour Silver', description: 'Producteur argent' },
+      { symbol: 'SVM', name: 'Silvercorp Metals', description: 'Argent Chine' },
+      { symbol: 'CDE', name: 'Coeur Mining', description: 'Métaux précieux' },
+      { symbol: 'CC', name: 'Chemours', description: 'Chimie titane' },
+      { symbol: 'ALB', name: 'Albemarle', description: 'Leader mondial lithium' },
+      { symbol: 'KGC', name: 'Kinross Gold', description: 'Producteur or majeur' },
+      { symbol: 'SBSW', name: 'Sibanye Stillwater', description: 'PGM et or Afrique Sud' },
+      { symbol: 'MP', name: 'MP Materials', description: 'Terres rares USA' },
+      { symbol: 'PPTA', name: 'Perpetua Resources', description: 'Or/antimoine Idaho' },
+      { symbol: 'HBM', name: 'Hudbay Minerals', description: 'Cuivre/zinc Canada' },
+      { symbol: 'ALM', name: 'Alma Gold', description: 'Or Afrique' },
+      { symbol: 'AA', name: 'Alcoa', description: 'Aluminium majeur' }
+    ]
+  },
+  'healthcare': {
+    name: 'Healthcare',
+    color: '#e91e63',
+    description: 'Suivi des valeurs biotech et healthcare',
+    finvizUrl: `${FINVIZ_BASE}healthcare${FINVIZ_PARAMS}`,
+    stocks: [
+      { symbol: 'CRVS', name: 'Corvus Pharmaceuticals', description: 'Immuno-oncologie' },
+      { symbol: 'ERAS', name: 'Erasca', description: 'Oncologie ciblée' },
+      { symbol: 'NTLA', name: 'Intellia Therapeutics', description: 'CRISPR thérapie génique' },
+      { symbol: 'MRNA', name: 'Moderna', description: 'ARNm vaccins/thérapies' },
+      { symbol: 'RVMD', name: 'Revolution Medicines', description: 'Oncologie RAS' },
+      { symbol: 'TNGX', name: 'Tango Therapeutics', description: 'Oncologie précision' },
+      { symbol: 'TXG', name: '10x Genomics', description: 'Génomique single-cell' },
+      { symbol: 'DFTX', name: 'Dfinity Therapeutics', description: 'Biotech' },
+      { symbol: 'DAWN', name: 'Day One Biopharmaceuticals', description: 'Oncologie pédiatrique' },
+      { symbol: 'NVO', name: 'Novo Nordisk', description: 'Diabète/obésité' },
+      { symbol: 'BEAM', name: 'Beam Therapeutics', description: 'Base editing' },
+      { symbol: 'OMER', name: 'Omeros', description: 'Biopharma maladies rares' },
+      { symbol: 'IMNM', name: 'Immunome', description: 'Immuno-oncologie' },
+      { symbol: 'ALKS', name: 'Alkermes', description: 'Neurosciences' },
+      { symbol: 'LQDA', name: 'Liquidia', description: 'Hypertension pulmonaire' },
+      { symbol: 'BKD', name: 'Brookdale Senior Living', description: 'Soins seniors' },
+      { symbol: 'GH', name: 'Guardant Health', description: 'Biopsie liquide oncologie' },
+      { symbol: 'XRAY', name: 'Dentsply Sirona', description: 'Équipements dentaires' },
+      { symbol: 'ALHC', name: 'Alignment Healthcare', description: 'Medicare Advantage' },
+      { symbol: 'PRGO', name: 'Perrigo', description: 'Pharma OTC' }
+    ]
+  },
+  'technology': {
+    name: 'Technology',
+    color: '#2196f3',
+    description: 'Suivi des valeurs technologiques',
+    finvizUrl: `${FINVIZ_BASE}technology${FINVIZ_PARAMS}`,
+    stocks: [
+      { symbol: 'SNDK', name: 'Sandisk', description: 'Stockage mémoire' },
+      { symbol: 'SKYT', name: 'SkyWater Technology', description: 'Fonderie semi-conducteurs' },
+      { symbol: 'UMAC', name: 'Unusual Machines', description: 'Drones' },
+      { symbol: 'ASTS', name: 'AST SpaceMobile', description: 'Satellite télécom' },
+      { symbol: 'MU', name: 'Micron Technology', description: 'Mémoire DRAM/NAND' },
+      { symbol: 'INTC', name: 'Intel', description: 'Processeurs' },
+      { symbol: 'NVTS', name: 'Navitas Semiconductor', description: 'Semi GaN' },
+      { symbol: 'ENTG', name: 'Entegris', description: 'Matériaux semi-conducteurs' },
+      { symbol: 'TTMI', name: 'TTM Technologies', description: 'PCB haute performance' },
+      { symbol: 'ONDS', name: 'Ondas Holdings', description: 'Réseaux sans fil' },
+      { symbol: 'WDC', name: 'Western Digital', description: 'Stockage données' },
+      { symbol: 'AMKR', name: 'Amkor Technology', description: 'Packaging semi' },
+      { symbol: 'LRCX', name: 'Lam Research', description: 'Équipements semi' },
+      { symbol: 'AEVA', name: 'Aeva Technologies', description: 'LiDAR' },
+      { symbol: 'ALGM', name: 'Allegro MicroSystems', description: 'Semi capteurs' },
+      { symbol: 'APLD', name: 'Applied Digital', description: 'Data centers HPC' },
+      { symbol: 'AMAT', name: 'Applied Materials', description: 'Équipements semi' },
+      { symbol: 'Q', name: 'Quintas Energy', description: 'Tech' },
+      { symbol: 'GFS', name: 'GlobalFoundries', description: 'Fonderie semi' },
+      { symbol: 'OUST', name: 'Ouster', description: 'LiDAR' }
+    ]
+  },
+  'industrials': {
+    name: 'Industrials',
+    color: '#9c27b0',
+    description: 'Suivi des valeurs industrielles',
+    finvizUrl: `${FINVIZ_BASE}industrials${FINVIZ_PARAMS}`,
+    stocks: [
+      { symbol: 'RCAT', name: 'Red Cat Holdings', description: 'Drones défense' },
+      { symbol: 'KTOS', name: 'Kratos Defense', description: 'Défense/drones' },
+      { symbol: 'RDW', name: 'Redwire', description: 'Infrastructure spatiale' },
+      { symbol: 'EOSE', name: 'Eos Energy', description: 'Stockage énergie' },
+      { symbol: 'LUNR', name: 'Intuitive Machines', description: 'Services lunaires' },
+      { symbol: 'PL', name: 'Planet Labs', description: 'Imagerie satellite' },
+      { symbol: 'PCT', name: 'PureCycle Technologies', description: 'Recyclage plastique' },
+      { symbol: 'TTI', name: 'TETRA Technologies', description: 'Services énergie' },
+      { symbol: 'SERV', name: 'Serve Robotics', description: 'Robots livraison' },
+      { symbol: 'SMR', name: 'NuScale Power', description: 'Nucléaire modulaire' },
+      { symbol: 'AMPX', name: 'Amprius Technologies', description: 'Batteries silicium' },
+      { symbol: 'FLY', name: 'Fly Leasing', description: 'Leasing avions' },
+      { symbol: 'RKLB', name: 'Rocket Lab', description: 'Lanceur spatial' },
+      { symbol: 'TREX', name: 'Trex Company', description: 'Terrasses composites' },
+      { symbol: 'BLDR', name: 'Builders FirstSource', description: 'Matériaux construction' },
+      { symbol: 'KNX', name: 'Knight-Swift', description: 'Transport routier' },
+      { symbol: 'VRT', name: 'Vertiv Holdings', description: 'Infrastructure data centers' },
+      { symbol: 'SARO', name: 'StandardAero', description: 'Maintenance aéronautique' },
+      { symbol: 'QXO', name: 'QXO Inc', description: 'Distribution matériaux' },
+      { symbol: 'IR', name: 'Ingersoll Rand', description: 'Équipements industriels' }
+    ]
+  },
+  'energy': {
+    name: 'Energy',
+    color: '#ff9800',
+    description: 'Suivi des valeurs énergétiques',
+    finvizUrl: `${FINVIZ_BASE}energy${FINVIZ_PARAMS}`,
+    stocks: [
+      { symbol: 'CCJ', name: 'Cameco', description: 'Uranium majeur' },
+      { symbol: 'UEC', name: 'Uranium Energy', description: 'Uranium exploration' },
+      { symbol: 'EC', name: 'Ecopetrol', description: 'Pétrole Colombie' },
+      { symbol: 'LBRT', name: 'Liberty Energy', description: 'Services fracturation' },
+      { symbol: 'CRK', name: 'Comstock Resources', description: 'Gaz naturel' },
+      { symbol: 'HAL', name: 'Halliburton', description: 'Services pétroliers' },
+      { symbol: 'BTU', name: 'Peabody Energy', description: 'Charbon' },
+      { symbol: 'DVN', name: 'Devon Energy', description: 'Pétrole/gaz indépendant' },
+      { symbol: 'UUUU', name: 'Energy Fuels', description: 'Uranium USA' },
+      { symbol: 'PBF', name: 'PBF Energy', description: 'Raffinage' },
+      { symbol: 'CTRA', name: 'Coterra Energy', description: 'Pétrole/gaz' },
+      { symbol: 'BKR', name: 'Baker Hughes', description: 'Services pétroliers' },
+      { symbol: 'MUR', name: 'Murphy Oil', description: 'Pétrole offshore' },
+      { symbol: 'AESI', name: 'Atlas Energy Solutions', description: 'Sable fracturation' },
+      { symbol: 'APA', name: 'APA Corporation', description: 'Pétrole/gaz exploration' },
+      { symbol: 'OVV', name: 'Ovintiv', description: 'Pétrole/gaz Canada' },
+      { symbol: 'FRO', name: 'Frontline', description: 'Transport pétrolier' },
+      { symbol: 'NOG', name: 'Northern Oil and Gas', description: 'Pétrole non-opéré' },
+      { symbol: 'AR', name: 'Antero Resources', description: 'Gaz naturel Appalachian' },
+      { symbol: 'EXE', name: 'Expand Energy', description: 'Gaz naturel' }
+    ]
+  },
+  'sp500': {
+    name: 'S&P 500',
+    color: '#ffd700',
+    description: 'Top performers du S&P 500',
+    finvizUrl: 'https://finviz.com/screener.ashx?v=141&f=idx_sp500,sh_avgvol_o2000,sh_price_o10,sh_relvol_o0.75,ta_volatility_wo3&o=-perf4w',
+    stocks: [
+      { symbol: 'SNDK', name: 'Sandisk', description: 'Stockage mémoire' },
+      { symbol: 'MRNA', name: 'Moderna', description: 'ARNm vaccins' },
+      { symbol: 'MU', name: 'Micron Technology', description: 'Mémoire DRAM/NAND' },
+      { symbol: 'INTC', name: 'Intel', description: 'Processeurs' },
+      { symbol: 'WDC', name: 'Western Digital', description: 'Stockage données' },
+      { symbol: 'ALB', name: 'Albemarle', description: 'Lithium' },
+      { symbol: 'LRCX', name: 'Lam Research', description: 'Équipements semi' },
+      { symbol: 'AMAT', name: 'Applied Materials', description: 'Équipements semi' },
+      { symbol: 'Q', name: 'Quintiles', description: 'Services pharma' },
+      { symbol: 'BKR', name: 'Baker Hughes', description: 'Services pétroliers' },
+      { symbol: 'DOW', name: 'Dow Inc', description: 'Chimie' },
+      { symbol: 'HAL', name: 'Halliburton', description: 'Services pétroliers' },
+      { symbol: 'BLDR', name: 'Builders FirstSource', description: 'Matériaux construction' },
+      { symbol: 'IBKR', name: 'Interactive Brokers', description: 'Courtage' },
+      { symbol: 'FCX', name: 'Freeport-McMoRan', description: 'Cuivre' },
+      { symbol: 'LYB', name: 'LyondellBasell', description: 'Chimie' },
+      { symbol: 'STZ', name: 'Constellation Brands', description: 'Boissons' },
+      { symbol: 'AMD', name: 'AMD', description: 'Processeurs/GPU' },
+      { symbol: 'MOS', name: 'Mosaic', description: 'Engrais' },
+      { symbol: 'TER', name: 'Teradyne', description: 'Test semi-conducteurs' }
+    ]
+  },
+  'all': {
+    name: 'All Sectors',
+    color: '#00e676',
+    description: 'Tous les secteurs combinés - Top performers',
+    finvizUrl: 'https://finviz.com/screener.ashx?v=141&f=sh_avgvol_o2000,sh_price_o10,sh_relvol_o0.75,ta_volatility_wo3&o=-perf4w',
+    stocks: [
+      { symbol: 'ROLR', name: 'Rollins Road', description: 'Immobilier' },
+      { symbol: 'CRVS', name: 'Corvus Pharmaceuticals', description: 'Healthcare' },
+      { symbol: 'ERAS', name: 'Erasca', description: 'Healthcare' },
+      { symbol: 'HYMC', name: 'Hycroft Mining', description: 'Materials' },
+      { symbol: 'CRML', name: 'Cordia Corporation', description: 'Materials' },
+      { symbol: 'RCAT', name: 'Red Cat Holdings', description: 'Industrials' },
+      { symbol: 'SNDK', name: 'Sandisk', description: 'Technology' },
+      { symbol: 'UAMY', name: 'United States Antimony', description: 'Materials' },
+      { symbol: 'SKYT', name: 'SkyWater Technology', description: 'Technology' },
+      { symbol: 'AGQ', name: 'ProShares Ultra Silver', description: 'ETF Argent 2x' },
+      { symbol: 'UMAC', name: 'Unusual Machines', description: 'Technology' },
+      { symbol: 'METC', name: 'Ramaco Resources', description: 'Materials' },
+      { symbol: 'NTLA', name: 'Intellia Therapeutics', description: 'Healthcare' },
+      { symbol: 'IMSR', name: 'IMS Holdings', description: 'Financials' },
+      { symbol: 'USAR', name: 'US Gold Corp', description: 'Materials' },
+      { symbol: 'UUUU', name: 'Energy Fuels', description: 'Energy' },
+      { symbol: 'UEC', name: 'Uranium Energy', description: 'Energy' },
+      { symbol: 'HL', name: 'Hecla Mining', description: 'Materials' },
+      { symbol: 'IRE', name: 'Iridex', description: 'Healthcare' },
+      { symbol: 'FIGR', name: 'Figrr', description: 'Financials' }
+    ]
+  }
+};
+
+const CHART_COLORS = ['#ff5722', '#ff9800', '#ffc107', '#8bc34a', '#4caf50', '#00bcd4', '#2196f3', '#9c27b0', '#e91e63'];
+
+function PortfolioSector() {
   const navigate = useNavigate();
+  const [selectedSector, setSelectedSector] = useState('basic-materials');
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,14 +232,8 @@ function PortfolioHealthcare() {
   const [chartPeriod, setChartPeriod] = useState('1M');
   const [sortConfig, setSortConfig] = useState({ key: 'performance', direction: 'desc' });
 
-  // Données du portefeuille Healthcare
-  const stocks = [
-    { symbol: 'PACS', name: 'PACS Group', description: 'Opérateur soins post-aigus' },
-    { symbol: 'CRMD', name: 'CorMedix', description: 'Biopharma dialyse' },
-    { symbol: 'PRAX', name: 'Praxis Precision Medicines', description: 'Biotech neurologie' },
-    { symbol: 'OMER', name: 'Omeros', description: 'Biopharma maladies rares' },
-    { symbol: 'FULC', name: 'Fulcrum Therapeutics', description: 'Biotech régulation génétique' }
-  ];
+  const sector = SECTORS[selectedSector];
+  const stocks = sector.stocks;
 
   // Convertir date YYYY-MM-DD en timestamp
   const dateToTimestamp = (dateStr) => {
@@ -137,20 +335,9 @@ function PortfolioHealthcare() {
     setHistoricalPrices(prices);
     setChartData(charts);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [constitutionDate, chartPeriod]);
+  }, [constitutionDate, chartPeriod, selectedSector]);
 
-  useEffect(() => {
-    fetchPrices();
-    const interval = setInterval(fetchPrices, 60000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    fetchHistoricalPrices();
-  }, [fetchHistoricalPrices]);
-
-  const fetchPrices = async () => {
+  const fetchPrices = useCallback(async () => {
     try {
       setLoading(true);
       const apiBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4001';
@@ -158,7 +345,6 @@ function PortfolioHealthcare() {
       const promises = stocks.map(async (stock) => {
         try {
           const url = `${apiBase}/api/finance/${stock.symbol}`;
-          console.log(`Fetching ${stock.symbol} from ${url}`);
           const response = await axios.get(url);
 
           const data = response.data.chart.result[0];
@@ -175,7 +361,7 @@ function PortfolioHealthcare() {
           return {
             ...stock,
             currentPrice: null,
-            totalUSD: null,
+            volume: null,
             error: 'Erreur de chargement'
           };
         }
@@ -190,6 +376,23 @@ function PortfolioHealthcare() {
     } finally {
       setLoading(false);
     }
+  }, [stocks]);
+
+  useEffect(() => {
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 60000);
+    return () => clearInterval(interval);
+  }, [fetchPrices]);
+
+  useEffect(() => {
+    fetchHistoricalPrices();
+  }, [fetchHistoricalPrices]);
+
+  const handleSectorChange = (e) => {
+    setSelectedSector(e.target.value);
+    setPortfolio([]);
+    setChartData([]);
+    setHistoricalPrices({});
   };
 
   const formatNumber = (num) => {
@@ -291,15 +494,43 @@ function PortfolioHealthcare() {
         </div>
 
         <h1 style={{ fontSize: '1.5rem', marginTop: '20px' }}>
-          Portfolio Healthcare
+          Portfolio Secteur
         </h1>
+
+        {/* Sélecteur de secteur */}
+        <div style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <label style={{ color: '#9fa3a8', fontSize: '0.85rem' }}>
+            Secteur :
+          </label>
+          <select
+            value={selectedSector}
+            onChange={handleSectorChange}
+            style={{
+              padding: '8px 15px',
+              borderRadius: '5px',
+              border: `2px solid ${sector.color}`,
+              backgroundColor: '#1e2228',
+              color: sector.color,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            {Object.entries(SECTORS).map(([key, s]) => (
+              <option key={key} value={key} style={{ color: '#e6e6e6' }}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <p style={{ color: '#9fa3a8', marginBottom: '10px', fontSize: '0.85rem' }}>
-          Suivi des valeurs biotech et healthcare -
+          {sector.description} -
           <a
-            href="https://finviz.com/screener.ashx?v=141&f=sec_healthcare,sh_avgvol_o1000,sh_price_o10,sh_relvol_o0.75,ta_volatility_wo3&o=-perf1w"
+            href={sector.finvizUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: '#e91e63' }}
+            style={{ color: sector.color, marginLeft: '5px' }}
           >
             Screener Finviz
           </a>
@@ -323,7 +554,7 @@ function PortfolioHealthcare() {
               fontSize: '0.85rem'
             }}
           />
-          <span style={{ color: '#e91e63', fontSize: '0.85rem' }}>
+          <span style={{ color: sector.color, fontSize: '0.85rem' }}>
             ({formatDate(constitutionDate)})
           </span>
         </div>
@@ -406,11 +637,11 @@ function PortfolioHealthcare() {
             padding: '20px',
             backgroundColor: '#1a1d21',
             borderRadius: '12px',
-            border: '2px solid #e91e63'
+            border: `2px solid ${sector.color}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{
-                color: '#e91e63',
+                color: sector.color,
                 margin: 0,
                 fontSize: '1.2rem'
               }}>
@@ -424,8 +655,8 @@ function PortfolioHealthcare() {
                     style={{
                       padding: '6px 16px',
                       borderRadius: '5px',
-                      border: chartPeriod === period ? '2px solid #e91e63' : '1px solid #3a3f47',
-                      backgroundColor: chartPeriod === period ? '#e91e63' : '#1e2228',
+                      border: chartPeriod === period ? `2px solid ${sector.color}` : '1px solid #3a3f47',
+                      backgroundColor: chartPeriod === period ? sector.color : '#1e2228',
                       color: chartPeriod === period ? '#fff' : '#9fa3a8',
                       cursor: 'pointer',
                       fontWeight: chartPeriod === period ? 'bold' : 'normal',
@@ -562,7 +793,7 @@ function PortfolioHealthcare() {
                           return [<span style={{ color }}>{value.toFixed(2)}%</span>, 'Rendement'];
                         }}
                         labelFormatter={(label) => `Date: ${label}`}
-                        labelStyle={{ color: '#e91e63', fontWeight: 'bold' }}
+                        labelStyle={{ color: sector.color, fontWeight: 'bold' }}
                         itemStyle={{ color: '#e6e6e6' }}
                       />
                       <ReferenceLine yAxisId="right" y={0} stroke="#666" strokeWidth={1} />
@@ -585,7 +816,7 @@ function PortfolioHealthcare() {
                           if (payload.isConstitution) {
                             return (
                               <g key={`dot-${cx}-${cy}`}>
-                                <circle cx={cx} cy={cy} r={8} fill="#e91e63" stroke="#fff" strokeWidth={2} />
+                                <circle cx={cx} cy={cy} r={8} fill={sector.color} stroke="#fff" strokeWidth={2} />
                                 <circle cx={cx} cy={cy} r={4} fill="#fff" />
                               </g>
                             );
@@ -606,4 +837,4 @@ function PortfolioHealthcare() {
   );
 }
 
-export default PortfolioHealthcare;
+export default PortfolioSector;

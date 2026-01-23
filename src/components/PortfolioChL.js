@@ -11,19 +11,18 @@ function PortfolioChL() {
   const [eurUsdRate, setEurUsdRate] = useState(null); // Taux EUR/USD
   const [gbpEurRate, setGbpEurRate] = useState(null); // Taux GBP/EUR
 
-  // Liquidités (mis à jour 17/01/2026)
-  const liquidites = 245380.40; // EUR
+  // Liquidités (mis à jour 21/01/2026)
+  const liquidites = 268246.43; // EUR
 
-  // Données du portefeuille ChL (mis à jour 17/01/2026)
+  // Données du portefeuille ChL (mis à jour 21/01/2026)
   // buyTotalUSD = montant total payé en USD (d'après bordereaux Bolero)
   const stocks = [
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', units: 350, buyPriceUSD: 291.47, buyTotalUSD: 102500.15 },
-    { symbol: 'CRWV', name: 'Coreweave Inc.', units: 500, buyPriceUSD: 101.3662, buyTotalUSD: 50910.49 },
-    { symbol: 'GLXY', name: 'Galaxy Digital', units: 1500, buyPriceUSD: 34.01, buyTotalUSD: 51489.94 },
-    { symbol: 'RDW', name: 'Redwire Corp.', units: 5000, buyPriceUSD: 10.90, buyTotalUSD: 54970.38 },
-    { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', units: 58, buyPriceUSD: 2058.83, buyTotalUSD: 120427 },
-    { symbol: 'SNDK', name: 'Sandisk Corp.', units: 150, buyPriceUSD: 382.14, buyTotalUSD: 57822.28 },
-    { symbol: 'WDC', name: 'Western Digital', units: 300, buyPriceUSD: 199.37, buyTotalUSD: 60320.34 }
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', units: 350, buyPriceUSD: 292.86, buyTotalUSD: 102500.15 },
+    { symbol: 'MU', name: 'Micron Technology, Inc.', units: 150, buyPriceUSD: 387.55, buyTotalUSD: 58132.53 },
+    { symbol: 'SQM', name: 'SQM', units: 700, buyPriceUSD: 81.83, buyTotalUSD: 57283.87 },
+    { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', units: 58, buyPriceUSD: 2076.33, buyTotalUSD: 120427.00 },
+    { symbol: 'SNDK', name: 'Sandisk Corp.', units: 150, buyPriceUSD: 383.81, buyTotalUSD: 57572.13 },
+    { symbol: 'WDC', name: 'Western Digital', units: 300, buyPriceUSD: 200.23, buyTotalUSD: 60070.19 }
   ];
 
   useEffect(() => {
