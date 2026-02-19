@@ -15,15 +15,15 @@ function GraphiquesChL() {
   const [usdEurHistory, setUsdEurHistory] = useState([]);
   const [usdEurByDate, setUsdEurByDate] = useState({});
 
-  // Mis à jour 21/01/2026 - Après ventes CRWV, GLXY, RDW et achats MU, SQM
-  // Actions actuelles
+  // Mis à jour 19/02/2026 - Ventes GOOGL, MU, SNDK, WDC (gardés pour suivi futur)
+  // Actions actuelles + vendues récemment (sold: true = vendu mais suivi continu)
   const stocks = [
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', color: '#2196f3', units: 350, buyPrice: 292.86, buyDate: '2025-11-20' },
-    { symbol: 'MU', name: 'Micron Technology', color: '#00bcd4', units: 150, buyPrice: 387.55, buyDate: '2026-01-21' },
-    { symbol: 'SQM', name: 'SQM', color: '#ff9800', units: 700, buyPrice: 81.83, buyDate: '2026-01-21' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', color: '#2196f3', units: 150, buyPrice: 292.86, buyDate: '2025-11-20', sold: true, sellPrice: 303.97, sellDate: '2026-02-18' },
+    { symbol: 'MU', name: 'Micron Technology', color: '#00bcd4', units: 150, buyPrice: 387.55, buyDate: '2026-01-21', sold: true, sellPrice: 422.27, sellDate: '2026-02-18' },
     { symbol: 'SMSN.IL', name: 'Samsung Electronics GDR', color: '#1428a0', units: 58, buyPrice: 2076.33, buyDate: '2025-12-29' },
-    { symbol: 'SNDK', name: 'Sandisk Corp.', color: '#9c27b0', units: 150, buyPrice: 383.81, buyDate: '2026-01-09' },
-    { symbol: 'WDC', name: 'Western Digital', color: '#4caf50', units: 300, buyPrice: 200.23, buyDate: '2026-01-09' }
+    { symbol: 'SNDK', name: 'Sandisk Corp.', color: '#9c27b0', units: 150, buyPrice: 383.81, buyDate: '2026-01-09', sold: true, sellPrice: 603.09, sellDate: '2026-02-18' },
+    { symbol: 'WDC', name: 'Western Digital', color: '#4caf50', units: 300, buyPrice: 200.23, buyDate: '2026-01-09', sold: true, sellPrice: 301.68, sellDate: '2026-02-18' },
+    { symbol: 'PHAG.AS', name: 'WisdomTree Physical Silver', color: '#c0c0c0', units: 700, buyPrice: 77.18, buyDate: '2026-01-23', currency: 'EUR' },
   ];
 
   // Actions vendues (historique) - courbes grises
@@ -41,7 +41,11 @@ function GraphiquesChL() {
     { symbol: 'WDC', name: 'Western Digital (vendu)', color: '#bbbbbb', units: 400, buyPrice: 163.44, buyDate: '2025-11-28', sellPrice: 201.14, sellDate: '2026-01-07', sold: true, currency: 'USD' },
     { symbol: 'AMAT', name: 'Applied Materials (vendu)', color: '#8bc34a', units: 240, buyPrice: 251.98, buyDate: '2025-11-28', sellPrice: 290.32, sellDate: '2026-01-07', sold: true, currency: 'USD' },
     { symbol: 'HYMC', name: 'Hycroft Mining (vendu)', color: '#9c27b0', units: 2000, buyPrice: 27.73, buyDate: '2026-01-05', sellPrice: 27.53, sellDate: '2026-01-07', sold: true, currency: 'USD' },
-    { symbol: 'HY9H.F', name: 'SK Hynix GDR (vendu)', color: '#cccccc', units: 100, buyPrice: 430, buyDate: '2026-01-06', sellPrice: 436.86, sellDate: '2026-01-07', sold: true, currency: 'EUR' }
+    { symbol: 'HY9H.F', name: 'SK Hynix GDR (vendu)', color: '#cccccc', units: 100, buyPrice: 430, buyDate: '2026-01-06', sellPrice: 436.86, sellDate: '2026-01-07', sold: true, currency: 'EUR' },
+    { symbol: 'SQM', name: 'SQM (vendu)', color: '#ff9800', units: 700, buyPrice: 81.83, buyDate: '2026-01-21', sellPrice: 80.17, sellDate: '2026-01-29', sold: true, currency: 'USD' },
+    { symbol: 'ALKAL.PA', name: 'Kalray SA (vendu)', color: '#e91e63', units: 15000, buyPrice: 4.21, buyDate: '2026-01-23', sellPrice: 2.70, sellDate: '2026-01-28', sold: true, currency: 'EUR' },
+    { symbol: 'HBM', name: 'Hudbay Minerals (vendu)', color: '#795548', units: 2500, buyPrice: 26.66, buyDate: '2026-01-27', sellPrice: 25.24, sellDate: '2026-02-12', sold: true, currency: 'USD' },
+    { symbol: 'BNP.PA', name: 'BNP Paribas (vendu)', color: '#009688', units: 520, buyPrice: 93.93, buyDate: '2026-02-05', sellPrice: 92.16, sellDate: '2026-02-12', sold: true, currency: 'EUR' }
   ];
 
   // ETF vendus (historique) - courbes grises
@@ -60,6 +64,7 @@ function GraphiquesChL() {
   const allStocks = [...stocks, ...soldStocks, ...soldETFs];
 
   const [combinedData, setCombinedData] = useState([]);
+  const [oldPortfolioData, setOldPortfolioData] = useState([]);
 
   const periods = [
     { value: '1d', label: '1J' },
@@ -255,6 +260,9 @@ function GraphiquesChL() {
     }
   };
 
+  // Actions actives uniquement (non vendues) pour le total portefeuille
+  const activeStocks = stocks.filter(s => !s.sold);
+
   const calculatePortfolioTotal = (results) => {
     const allTimestamps = new Set();
     results.forEach(result => {
@@ -265,7 +273,7 @@ function GraphiquesChL() {
 
     const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
     const lastKnownPrices = {};
-    stocks.forEach(stock => {
+    activeStocks.forEach(stock => {
       lastKnownPrices[stock.symbol] = null;
     });
 
@@ -274,7 +282,7 @@ function GraphiquesChL() {
       let allStocksHaveValue = true;
 
       results.forEach(result => {
-        const stockData = stocks.find(s => s.symbol === result.symbol);
+        const stockData = activeStocks.find(s => s.symbol === result.symbol);
         if (!stockData) return;
 
         const priceData = result.data.find(item => item.timestamp === timestamp);
@@ -302,6 +310,46 @@ function GraphiquesChL() {
     }).filter(item => item !== null);
 
     setPortfolioData(portfolioValues);
+
+    // Calcul de l'ancien portefeuille (toutes les actions incluant vendues)
+    const oldLastKnownPrices = {};
+    stocks.forEach(stock => {
+      oldLastKnownPrices[stock.symbol] = null;
+    });
+
+    const oldPortfolioValues = sortedTimestamps.map(timestamp => {
+      let totalValue = 0;
+      let allHaveValue = true;
+
+      results.forEach(result => {
+        const stockData = stocks.find(s => s.symbol === result.symbol);
+        if (!stockData) return;
+
+        const priceData = result.data.find(item => item.timestamp === timestamp);
+
+        if (priceData && priceData.price) {
+          oldLastKnownPrices[result.symbol] = priceData.price;
+          totalValue += priceData.price * stockData.units;
+        } else if (oldLastKnownPrices[result.symbol] !== null) {
+          totalValue += oldLastKnownPrices[result.symbol] * stockData.units;
+        } else {
+          allHaveValue = false;
+        }
+      });
+
+      if (allHaveValue && totalValue > 0) {
+        const date = new Date(timestamp * 1000);
+        return {
+          date: date.toLocaleDateString('fr-FR'),
+          time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          datetime: `${date.toLocaleDateString('fr-FR')} ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
+          value: parseFloat(totalValue.toFixed(2))
+        };
+      }
+      return null;
+    }).filter(item => item !== null);
+
+    setOldPortfolioData(oldPortfolioValues);
   };
 
   // Calcul des performances combinées (normalisées en % depuis date d'achat)
@@ -328,12 +376,15 @@ function GraphiquesChL() {
     });
 
     // Convertir les dates d'achat et de vente en format fr-FR
+    // Les stocks dans stocks[] avec sold: true gardent leur courbe (suivi continu)
+    const stockSymbols = new Set(stocks.map(s => s.symbol));
     const buyDatesStr = {};
     const sellDatesStr = {};
     allStocks.forEach(stock => {
       const [year, month, day] = stock.buyDate.split('-');
       buyDatesStr[stock.symbol] = `${day}/${month}/${year}`;
-      if (stock.sellDate) {
+      // Ne couper la courbe que pour soldStocks/soldETFs, pas pour stocks[] avec sold: true
+      if (stock.sellDate && !stockSymbols.has(stock.symbol)) {
         const [sYear, sMonth, sDay] = stock.sellDate.split('-');
         sellDatesStr[stock.symbol] = `${sDay}/${sMonth}/${sYear}`;
       }
@@ -501,7 +552,7 @@ function GraphiquesChL() {
             Portfolio ChL (USD)
             {(() => {
               // Calcul du rendement total depuis achat
-              const totalBuyValue = stocks.reduce((sum, stock) => sum + (stock.buyPrice * stock.units), 0);
+              const totalBuyValue = activeStocks.reduce((sum, stock) => sum + (stock.buyPrice * stock.units), 0);
               const lastValue = portfolioData[portfolioData.length - 1]?.value || 0;
               const totalPerf = ((lastValue - totalBuyValue) / totalBuyValue * 100).toFixed(2);
               const perfNum = parseFloat(totalPerf);
@@ -551,18 +602,77 @@ function GraphiquesChL() {
         </div>
       )}
 
+      {/* Graphique Old Portfolio (toutes les actions incluant vendues) */}
+      {oldPortfolioData.length > 0 && (
+        <div className="chart-section portfolio-total-section" style={{ borderLeft: '3px solid #ff9800' }}>
+          <h2 style={{ color: '#9fa3a8' }}>
+            Old Portfolio ChL (USD)
+            {(() => {
+              const totalBuyValue = stocks.reduce((sum, stock) => sum + (stock.buyPrice * stock.units), 0);
+              const lastValue = oldPortfolioData[oldPortfolioData.length - 1]?.value || 0;
+              const totalPerf = ((lastValue - totalBuyValue) / totalBuyValue * 100).toFixed(2);
+              const perfNum = parseFloat(totalPerf);
+              const perfAmount = lastValue - totalBuyValue;
+              return (
+                <span style={{ float: 'right', textAlign: 'right' }}>
+                  <div style={{ fontSize: '1rem', color: perfNum >= 0 ? '#4caf50' : '#f44336' }}>
+                    Rendement depuis achat: {perfNum >= 0 ? '+' : ''}{totalPerf}%
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: perfNum >= 0 ? '#4caf50' : '#f44336', marginTop: '2px' }}>
+                    {perfNum >= 0 ? '+' : ''}{perfAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                  </div>
+                </span>
+              );
+            })()}
+          </h2>
+          <p style={{ fontSize: '0.75rem', color: '#9fa3a8', marginBottom: '10px' }}>
+            Suivi si les positions vendues avaient été conservées
+          </p>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={oldPortfolioData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
+              <XAxis
+                dataKey={isIntradayPeriod ? "datetime" : "date"}
+                stroke="#9fa3a8"
+                tick={{ fontSize: 12 }}
+                interval="preserveStartEnd"
+                tickFormatter={(value, index) => {
+                  if (isOneDayPeriod) {
+                    const parts = value.split(' ');
+                    return parts[1] || value;
+                  }
+                  const tickInterval = Math.floor(oldPortfolioData.length / 6);
+                  if (index % tickInterval === 0 || index === oldPortfolioData.length - 1) {
+                    return isIntradayPeriod ? value.split(' ')[0] : value;
+                  }
+                  return '';
+                }}
+              />
+              <YAxis stroke="#9fa3a8" tick={{ fontSize: 12 }} domain={['auto', 'auto']} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#1e2228', border: '1px solid #ff9800', borderRadius: '4px' }}
+                labelStyle={{ color: '#ff9800' }}
+                itemStyle={{ color: '#ff9800' }}
+                formatter={(value) => [`${value.toLocaleString('fr-FR')} USD`, 'Valeur']}
+              />
+              <Line type="monotone" dataKey="value" stroke="#ff9800" strokeWidth={3} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
       {/* Graphique combiné - Toutes les actions en % depuis achat */}
       {combinedData.length > 0 && (
         <div className="chart-section portfolio-total-section">
           <h2>Performance depuis achat (%)</h2>
-          {/* Affichage des performances finales - Actions actuelles */}
+          {/* Affichage des performances finales - Actions actuelles + suivi post-vente */}
           <div style={{ fontSize: '0.75rem', marginBottom: '5px', display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
             {stocks.map(stock => {
               const lastPoint = combinedData[combinedData.length - 1];
               const perf = lastPoint ? lastPoint[stock.symbol] : null;
               return perf !== undefined && perf !== null ? (
-                <span key={stock.symbol} style={{ color: perf >= 0 ? '#4caf50' : '#f44336' }}>
-                  {stock.symbol}: {perf >= 0 ? '+' : ''}{perf}%
+                <span key={stock.symbol} style={{ color: perf >= 0 ? '#4caf50' : '#f44336', opacity: stock.sold ? 0.6 : 1 }}>
+                  {stock.symbol}{stock.sold ? '*' : ''}: {perf >= 0 ? '+' : ''}{perf}%
                 </span>
               ) : null;
             })}
@@ -733,17 +843,19 @@ function GraphiquesChL() {
 
         // Trouver le point d'achat dans les données
         const buyPoint = findBuyPoint(chartData.data, stock.buyDate, stock.buyPrice);
+        const sellPoint = stock.sold ? findSellPoint(chartData.data, stock.sellDate, stock.sellPrice) : null;
 
-        // Ajouter le point d'achat aux données si trouvé
-        const dataWithBuyPoint = buyPoint ? chartData.data.map(item => ({
+        // Ajouter les points d'achat et de vente aux données
+        const dataWithPoints = chartData.data.map(item => ({
           ...item,
-          buyPrice: item.date === buyPoint.date ? stock.buyPrice : null
-        })) : chartData.data;
+          buyPrice: buyPoint && item.date === buyPoint.date ? stock.buyPrice : null,
+          sellPrice: sellPoint && item.date === sellPoint.date ? stock.sellPrice : null
+        }));
 
         return (
-          <div key={stock.symbol} className="chart-section">
-            <h2>
-              {stock.name} (
+          <div key={stock.symbol} className="chart-section" style={stock.sold ? { opacity: 0.8, borderLeft: '3px solid #ff9800' } : {}}>
+            <h2 style={stock.sold ? { color: '#9fa3a8' } : {}}>
+              {stock.name} {stock.sold && <span style={{ fontSize: '0.7rem', color: '#ff9800' }}>VENDU</span>} (
               <a href={`https://finance.yahoo.com/quote/${stock.symbol}/analysis/`} target="_blank" rel="noopener noreferrer" className="etf-chart-link">
                 {stock.symbol}
               </a>
@@ -775,6 +887,9 @@ function GraphiquesChL() {
               return (
                 <div style={{ fontSize: '0.75rem', color: '#9fa3a8', marginBottom: '5px', display: 'flex', justifyContent: 'space-between' }}>
                   <span>Achat: {stock.buyDate.split('-').reverse().join('/')} @ {stock.buyPrice.toLocaleString('fr-FR')} {stock.currency || 'USD'}</span>
+                  {stock.sold && (
+                    <span style={{ color: '#ff9800' }}>Vente: {stock.sellDate.split('-').reverse().join('/')} @ {stock.sellPrice.toLocaleString('fr-FR')} {stock.currency || 'USD'}</span>
+                  )}
                   {totalPerf && (
                     <span style={{ color: parseFloat(totalPerf) >= 0 ? '#4caf50' : '#f44336', fontWeight: 'bold' }}>
                       Rendement depuis achat: {parseFloat(totalPerf) >= 0 ? '+' : ''}{totalPerf}%
@@ -784,7 +899,7 @@ function GraphiquesChL() {
               );
             })()}
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={dataWithBuyPoint}>
+              <LineChart data={dataWithPoints}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#3a3f47" />
                 <XAxis
                   dataKey={isIntradayPeriod ? "datetime" : "date"}
@@ -812,6 +927,9 @@ function GraphiquesChL() {
                     if (name === 'buyPrice' && value) {
                       return [`${value.toLocaleString('fr-FR')} ${stock.currency || 'USD'}`, 'Prix achat'];
                     }
+                    if (name === 'sellPrice' && value) {
+                      return [`${value.toLocaleString('fr-FR')} ${stock.currency || 'USD'}`, 'Prix vente'];
+                    }
                     return [`${value?.toLocaleString('fr-FR')} ${stock.currency || 'USD'}`, 'Prix'];
                   }}
                 />
@@ -824,6 +942,17 @@ function GraphiquesChL() {
                     strokeWidth={0}
                     dot={{ r: 6, fill: '#ffeb3b', stroke: '#ffffff', strokeWidth: 2 }}
                     name="buyPrice"
+                    isAnimationActive={false}
+                  />
+                )}
+                {sellPoint && (
+                  <Line
+                    type="monotone"
+                    dataKey="sellPrice"
+                    stroke="#ffffff"
+                    strokeWidth={0}
+                    dot={{ r: 6, fill: '#f44336', stroke: '#ffffff', strokeWidth: 2 }}
+                    name="sellPrice"
                     isAnimationActive={false}
                   />
                 )}
@@ -844,11 +973,11 @@ function GraphiquesChL() {
       )}
 
       {/* Graphiques individuels - Actions vendues */}
-      {soldStocks.map((stock) => {
+      {soldStocks.map((stock, idx) => {
         const chartData = chartsData[stock.symbol];
         if (!chartData || chartData.error || chartData.data.length === 0) {
           return (
-            <div key={stock.symbol} className="chart-section" style={{ opacity: 0.7, borderLeft: '3px solid #666' }}>
+            <div key={`${stock.symbol}-${idx}`} className="chart-section" style={{ opacity: 0.7, borderLeft: '3px solid #666' }}>
               <h2 style={{ color: '#9fa3a8' }}>{stock.name} ({stock.symbol})</h2>
               <p className="error">Données non disponibles</p>
             </div>
@@ -881,7 +1010,7 @@ function GraphiquesChL() {
         const profitLossEUR = fxBuy && fxSell ? (stock.sellPrice * stock.units * fxSell) - (stock.buyPrice * stock.units * fxBuy) : null;
 
         return (
-          <div key={stock.symbol} className="chart-section" style={{ opacity: 0.8, borderLeft: '3px solid #666' }}>
+          <div key={`${stock.symbol}-${idx}`} className="chart-section" style={{ opacity: 0.8, borderLeft: '3px solid #666' }}>
             <h2 style={{ color: '#9fa3a8' }}>
               {stock.name} (
               <a href={`https://finance.yahoo.com/quote/${stock.symbol}/`} target="_blank" rel="noopener noreferrer" className="etf-chart-link" style={{ color: '#888' }}>
