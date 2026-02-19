@@ -550,6 +550,7 @@ function SalesHistory() {
     };
 
     computePortfolioValues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historicalRates, eurUsdRate]);
 
   return (

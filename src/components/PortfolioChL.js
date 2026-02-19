@@ -160,16 +160,6 @@ function PortfolioChL() {
     return usdToEur + eurStocks;
   };
 
-  const getActiveBuyUSD = () => {
-    return stocks.filter(s => !s.sold).reduce((sum, stock) => sum + (stock.buyTotalUSD || 0), 0);
-  };
-
-  const getActiveBuyEUR = () => {
-    if (!eurUsdRate) return null;
-    const usdInEur = getActiveBuyUSD() / eurUsdRate;
-    const eurDirect = stocks.filter(s => !s.sold).reduce((sum, stock) => sum + (stock.buyTotalEUR || 0), 0);
-    return usdInEur + eurDirect;
-  };
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return 'N/A';
